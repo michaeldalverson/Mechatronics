@@ -1,29 +1,33 @@
 #include <SoftwareSerial.h>
 #include "DualVNH5019MotorShield.h"
-
+unsigned char INA1 = 40;
+unsigned char INB1  = 42;
+unsigned char PWM1 = 44;
+unsigned char EN1DIAG1 = 38;
+unsigned char CS1 = A6;
+unsigned char INA2 = 41;
+unsigned char INB2 = 43;
+unsigned char PWM2 = 45;
+unsigned char EN2DIAG2 = 39;
+unsigned char CS2 = A7;
 DualVNH5019MotorShield MS1;
-DualVNH5019MotorShield MS2;
+DualVNH5019MotorShield MS2(INA1,INB1,PWM1,EN1DIAG1,CS1,INA2,INB2,PWM2,EN2DIAG2,CS2);
 
 //Analog Pins
 //Sensors
-const int hallSensorIn = A0;
-const int rangeFinderIn = A1;
+const int hallSensorIn = A8;
+const int rangeFinderIn = A9;
 
 //Digital Pins
 //IR Reflectance Sensors
-const int reflectSensorIn1 = 2;
-const int reflectSensorIn2 = 3;
-const int reflectSensorIn3 = 4;
-const int reflectSensorIn4 = 5;
-const int reflectSensorIn5 = 6;
-const int reflectSensorIn6 = 7;
-const int reflectSensorIn7 = 8;
-
-//Manipulator and Wheel Control
-const int wiperMotorOut = 10;
-const int forkliftMotorOut =11;
-const int rightMotorDriveOut = 12;
-const int leftMotorDriveOut = 13;
+const int reflectSensorIn1 = 23;
+const int reflectSensorIn2 = 25;
+const int reflectSensorIn3 = 27;
+const int reflectSensorIn4 = 29;
+const int reflectSensorIn5 = 31;
+const int reflectSensorIn6 = 33;
+const int reflectSensorIn7 = 35;
+const int reflectSensorIn8 = 37;
 
 //Switches to indicate forklift and wiper extremes
 const int stopSwitchRightSwiperIn = 18;
@@ -39,6 +43,8 @@ int leftStickSpeed = 0;
 int8_t tempLeftStickSpeed = 0;
 bool leftStickDirection;
 int forkLiftDirection = 0;
+int wiperSpeed = 0;
+int8_t tempWiperSpeed = 0;
 
 void setup() {
 
@@ -58,11 +64,9 @@ pinMode(reflectSensorIn4,INPUT);
 pinMode(reflectSensorIn5,INPUT);
 pinMode(reflectSensorIn6,INPUT);
 pinMode(reflectSensorIn7,INPUT);
+pinMode(reflectSensorIn8,INPUT);
 
-pinMode(wiperMotorOut,OUTPUT);
-pinMode(forkliftMotorOut,OUTPUT);
-pinMode(rightMotorDriveOut,OUTPUT);
-pinMode(leftMotorDriveOut,OUTPUT);
+
 
 pinMode(stopSwitchRightSwiperIn,INPUT);
 pinMode(stopSwitchLeftSwiperIn,INPUT);
@@ -76,7 +80,7 @@ Serial.begin(9600);
 
 void loop() {
 
-while(Serial3.available() > 2){
+while(Serial3.available() > 1){
   char buttonPressed = Serial3.read();
   if (buttonPressed == 'E'){
     Serial.println("Entrance Ceremony Commence");
@@ -94,15 +98,15 @@ while(Serial3.available() > 2){
     Serial.println("Teleoperated Wrestling Mode");
     delay(2);
   }
-  
+
   if (buttonPressed == 'L'){
     tempLeftStickSpeed = Serial3.read();
-    leftStickSpeed = map(tempLeftStickSpeed,-127,127,-400,400);
+    leftStickSpeed = map(tempLeftStickSpeed,-127,127,400,-400);
     Serial.print("L: ");
     Serial.println(leftStickSpeed);
     MS1.setM1Speed(leftStickSpeed);
   }
-  
+
   if (buttonPressed == 'R'){
     tempRightStickSpeed = Serial3.read();
     rightStickSpeed = map(tempRightStickSpeed,-127,127,-400,400);
@@ -110,13 +114,14 @@ while(Serial3.available() > 2){
     Serial.println(rightStickSpeed);
     MS1.setM2Speed(rightStickSpeed);
   }
- 
+  
+
   if(buttonPressed == 'U'){
     Serial.println("Fork Up");
     MS2.setM1Brake(0);
-    MS1.setM1Speed(400);
+    MS2.setM1Speed(400);
   }
-  
+
   if (buttonPressed == 'D'){
     Serial.println("Fork Down");
     MS2.setM1Brake(0);
@@ -128,10 +133,17 @@ while(Serial3.available() > 2){
     MS2.setM1Speed(0);
     MS2.setM1Brake(400);
   }
+
+  if (buttonPressed == 'W'){
+     tempWiperSpeed = Serial3.read();
+    wiperSpeed = map(tempWiperSpeed,-127,127,-400,400);
+    Serial.print("W: ");
+    Serial.println(wiperSpeed);
+    MS2.setM2Speed(wiperSpeed);
+  }
 }
 /*
   while(Serial1.available() > 2){
-
   
     if(Serial1.read() == 'E'){
       void entranceCeremony();
@@ -157,7 +169,6 @@ while(Serial3.available() > 2){
    if(Serial1.read() == 'D'){
     forkLiftDirection = -1;
    }
-
 }
 */
 }
