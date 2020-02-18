@@ -1,5 +1,8 @@
 #include <SoftwareSerial.h>
-#include "DualVNH5019MotorShield.h"
+#include <DualVNH5019MotorShield.h>
+#include <QTRSensors.h>
+
+// Motorshield Initializations
 unsigned char INA1 = 40;
 unsigned char INB1  = 42;
 unsigned char PWM1 = 44;
@@ -13,13 +16,17 @@ unsigned char CS2 = A7;
 DualVNH5019MotorShield MS1;
 DualVNH5019MotorShield MS2(INA1,INB1,PWM1,EN1DIAG1,CS1,INA2,INB2,PWM2,EN2DIAG2,CS2);
 
-//Analog Pins
-//Sensors
-const int hallSensorIn = A8;
-const int rangeFinderIn = A9;
+// Hall-Effect Sensor Initializations
+unsigned char hallSensorIn = A8;
 
-//Digital Pins
-//IR Reflectance Sensors
+// Range Finder Initializations
+unsigned char rangeFinderIn = A9;
+
+//IR Reflectance Sensor Initializations
+QTRSensors qtr;
+const uint8_t reflectSensorCount = 8;
+uint16_t reflectSensorValues[reflectSensorCount];
+
 const int reflectSensorIn1 = 23;
 const int reflectSensorIn2 = 25;
 const int reflectSensorIn3 = 27;
@@ -28,14 +35,15 @@ const int reflectSensorIn5 = 31;
 const int reflectSensorIn6 = 33;
 const int reflectSensorIn7 = 35;
 const int reflectSensorIn8 = 37;
+const int reflectSensorLED = 47;
 
-//Switches to indicate forklift and wiper extremes
+// Stop Switch Initializations
 const int stopSwitchRightSwiperIn = 18;
 const int stopSwitchLeftSwiperIn = 19;
 const int stopSwitchTopForkIn = 20;
 const int stopSwitchBottomForkIn = 21;
 
-//Value variables
+// Value variables
 int rightStickSpeed = 0;
 bool rightStickDirection;
 int8_t tempRightStickSpeed = 0;
@@ -48,38 +56,36 @@ int8_t tempWiperSpeed = 0;
 
 void setup() {
 
-// Initialize Motor Shields
-MS1.init();
-MS2.init();
-
-//Sensors
-pinMode(hallSensorIn,INPUT);
-pinMode(rangeFinderIn,INPUT);
-
-//Reflectance Sensors
-pinMode(reflectSensorIn1,INPUT);
-pinMode(reflectSensorIn2,INPUT);
-pinMode(reflectSensorIn3,INPUT);
-pinMode(reflectSensorIn4,INPUT); 
-pinMode(reflectSensorIn5,INPUT);
-pinMode(reflectSensorIn6,INPUT);
-pinMode(reflectSensorIn7,INPUT);
-pinMode(reflectSensorIn8,INPUT);
-
-
-
-pinMode(stopSwitchRightSwiperIn,INPUT);
-pinMode(stopSwitchLeftSwiperIn,INPUT);
-pinMode(stopSwitchTopForkIn,INPUT);
-pinMode(stopSwitchBottomForkIn,INPUT);
-
-//Serial
-Serial3.begin(9600);
-Serial.begin(9600);
-}
+  // Initialize Motor Shields
+  MS1.init();
+  MS2.init();
+  
+  // Hall-Effect Sensor Setup
+  pinMode(hallSensorIn,INPUT);
+  
+  // Range Finder Sensor Setup
+  pinMode(rangeFinderIn,INPUT);
+  
+  // Reflectance Sensors Setup
+  qtr.setTypeRC();
+  qtr.setSensorPins((const uint8_t[]){reflectSensorIn1, reflectSensorIn2, reflectSensorIn3, reflectSensorIn4,
+                     reflectSensorIn5, reflectSensorIn6, reflectSensorIn7, reflectSensorIn8}, reflectSensorCount);
+  qtr.setEmitterPin(reflectSensorLED);
+  
+  // Stopper Switch Setup
+  pinMode(stopSwitchRightSwiperIn,INPUT);
+  pinMode(stopSwitchLeftSwiperIn,INPUT);
+  pinMode(stopSwitchTopForkIn,INPUT);
+  pinMode(stopSwitchBottomForkIn,INPUT);
+  
+  // Serial Setup
+  Serial3.begin(9600);
+  Serial.begin(9600);
+  }
 
 void loop() {
 
+// Read the serial port if there is something in it
 while(Serial3.available() > 1){
   char buttonPressed = Serial3.read();
   if (buttonPressed == 'E'){
