@@ -12,5 +12,15 @@ void autonomousWrestlingPM7(){
     lineLocDen = lineLocDen + biasedSensorValues[i];
   }
   double lineLoc = lineLocNum/lineLocDen;
+  if (lineLoc < -1*bound){
+    MS1.setM2Speed(200);
+  }
+  else if (lineLoc > bound){
+    MS1.setM1Speed(200);
+  }
+  else {
+    MS1.setM1Speed(100);
+    MS1.setM2Speed(100);
+  }
   return;
 }

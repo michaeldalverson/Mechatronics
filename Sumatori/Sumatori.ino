@@ -56,6 +56,9 @@ int forkLiftDirection = 0;
 int wiperSpeed = 0;
 int8_t tempWiperSpeed = 0;
 
+//Autonomous turning bounds
+int bound = 0.25;
+
 void setup() {
 
   // Initialize Motor Shields
