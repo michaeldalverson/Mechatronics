@@ -1,8 +1,13 @@
 void autonomousWrestlingPM7(){
+
+  // Read qtr values
   qtr.read(reflectSensorValues);
+
+  // Initializations
   int16_t biasedSensorValues[reflectSensorCount];
   double lineLocNum = 0;
   double lineLocDen = 0;
+
   for (unsigned char i = 0; i < reflectSensorCount;i++){
     biasedSensorValues[i] = reflectSensorValues[i] - biasArray[i];
     if (biasedSensorValues[i] < 0){
