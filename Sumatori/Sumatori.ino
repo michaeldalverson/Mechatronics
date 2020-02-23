@@ -26,6 +26,7 @@ unsigned char rangeFinderIn = A9;
 QTRSensors qtr;
 const uint8_t reflectSensorCount = 8;
 uint16_t reflectSensorValues[reflectSensorCount];
+uint16_t biasArray[reflectSensorCount] = {0,0,0,0,0,0,0,0};
 
 const int reflectSensorIn1 = 23;
 const int reflectSensorIn2 = 25;
