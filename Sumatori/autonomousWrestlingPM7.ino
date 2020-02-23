@@ -14,9 +14,12 @@ void autonomousWrestlingPM7(){
   double lineLoc = lineLocNum/lineLocDen;
   if (lineLoc < -1*bound){
     MS1.setM2Speed(200);
+    MS1.setM1Speed(0);
+    
   }
   else if (lineLoc > bound){
     MS1.setM1Speed(200);
+    MS1.setM2Speed(0);
   }
   else {
     MS1.setM1Speed(100);
