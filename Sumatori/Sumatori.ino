@@ -24,6 +24,7 @@ unsigned char rangeFinderIn = A9;
 
 //IR Reflectance Sensor Initializations
 QTRSensors qtr;
+
 const int8_t reflectSensorCount = 8;
 int16_t reflectSensorValues[reflectSensorCount];
 uint16_t biasArray[reflectSensorCount];
