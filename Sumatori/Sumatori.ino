@@ -24,9 +24,10 @@ unsigned char rangeFinderIn = A9;
 
 //IR Reflectance Sensor Initializations
 QTRSensors qtr;
-const uint8_t reflectSensorCount = 8;
-uint16_t reflectSensorValues[reflectSensorCount];
-uint16_t biasArray[reflectSensorCount] = {0,0,0,0,0,0,0,0};
+
+const int8_t reflectSensorCount = 8;
+int16_t reflectSensorValues[reflectSensorCount];
+uint16_t biasArray[reflectSensorCount];
 
 const int reflectSensorIn1 = 23;
 const int reflectSensorIn2 = 25;
@@ -99,6 +100,7 @@ while(Serial3.available() > 1){
   }
   if (buttonPressed == 'A'){
     Serial.println("Autonomous Wrestling Mode");
+    autonomousWrestlingPM7();
     delay(2);
   }
   if (buttonPressed == 'T'){
@@ -149,43 +151,12 @@ while(Serial3.available() > 1){
     MS2.setM2Speed(wiperSpeed);
   }
 }
-/*
-  while(Serial1.available() > 2){
-  
-    if(Serial1.read() == 'E'){
-      void entranceCeremony();
-    }
-     if(Serial1.read() == 'A'){
-      void autonomousWrestling();
-  }
-    if(Serial1.read() == 'T'){
-     void teleOperation();    
-    }
-   if (Serial1.read() == 'L'){
-    leftStickSpeed = Serial1.read();
-    leftStickDirection = Serial1.read();
-    
-   }
-   if(Serial1.read() =='R'){
-    rightStickSpeed = Serial.read();
-    rightStickDirection = Serial1.read();
-   }
-   if(Serial1.read() == 'U'){
-    forkLiftDirection = 1;
-   }
-   if(Serial1.read() == 'D'){
-    forkLiftDirection = -1;
-   }
-}
-*/
 }
 
 void entranceCeremony(){
   return;
 }
-void autonomousWrestling(){
-  return;
-}
+
 void teleOperation(){
   return;
 }
