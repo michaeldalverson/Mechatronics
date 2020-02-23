@@ -56,6 +56,12 @@ int forkLiftDirection = 0;
 int wiperSpeed = 0;
 int8_t tempWiperSpeed = 0;
 
+// Controller Mode
+bool teleoperatedFlag = false;
+bool stopFlag = false;
+bool entranceFlag = false;
+bool autonomousFlag = false;
+
 //Autonomous turning bounds
 int bound = 0.25;
 
@@ -92,25 +98,44 @@ void loop() {
 
 // Read the serial port if there is something in it
 while(Serial3.available() > 1){
+  // Read char
   char buttonPressed = Serial3.read();
+
+  // MIDDLE BUTTONS
   if (buttonPressed == 'E'){
     Serial.println("Entrance Ceremony Commence");
+    teleoperatedFlag = false;
+    stopFlag = false;
+    entranceFlag = true;
+    autonomousFlag = false;
     delay(2);
   }
   if (buttonPressed == 'S'){
     Serial.println("STOP");
+    teleoperatedFlag = false;
+    stopFlag = true;
+    entranceFlag = false;
+    autonomousFlag = false;
     delay(2);
   }
   if (buttonPressed == 'A'){
     Serial.println("Autonomous Wrestling Mode");
-    autonomousWrestlingPM7();
+    teleoperatedFlag = false;
+    stopFlag = false;
+    entranceFlag = false;
+    autonomousFlag = true;
     delay(2);
   }
   if (buttonPressed == 'T'){
     Serial.println("Teleoperated Wrestling Mode");
+    teleoperatedFlag = true;
+    stopFlag = false;
+    entranceFlag = false;
+    autonomousFlag = false;
     delay(2);
   }
 
+  // Control Values
   if (buttonPressed == 'L'){
     tempLeftStickSpeed = Serial3.read();
     leftStickSpeed = map(tempLeftStickSpeed,-127,127,400,-400);
@@ -127,7 +152,6 @@ while(Serial3.available() > 1){
     MS1.setM2Speed(rightStickSpeed);
   }
   
-
   if(buttonPressed == 'U'){
     Serial.println("Fork Up");
     MS2.setM1Brake(0);
@@ -154,12 +178,19 @@ while(Serial3.available() > 1){
     MS2.setM2Speed(wiperSpeed);
   }
 }
+
+if (autonomousFlag) {
+  autonomousWrestlingPM7();
+}
+else if (teleoperatedFlag) {
+  // Unimplemented
+}
+else if (entranceFlag){
+  WallFollowing();
+}
+else if (stopFlag) {
+  // Unimplemented
 }
 
-void entranceCeremony(){
-  return;
-}
 
-void teleOperation(){
-  return;
 }
