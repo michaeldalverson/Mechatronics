@@ -24,15 +24,20 @@ void autonomousWrestlingPM7(){
     if (biasedSensorValues[i] < 0){
       biasedSensorValues[i] = 0;
     }
-    lineLocNum = lineLocNum + ((i+1) * biasedSensorValues[i]);
-    lineLocDen = lineLocDen + biasedSensorValues[i];
+    lineLocNum += ((i+1) * biasedSensorValues[i]);
+    lineLocDen += biasedSensorValues[i];
   }
 
   // Get line location estimate
-  lineLoc = lineLocNum/lineLocDen;
+  lineLoc = lineLocNum/lineLocDen - 4.5;
+
+  #ifdef debug
+    Serial.print("Line location: ");
+    Serial.println(lineLoc);
+  #endif
 
   // Change motor speed depending on line location
-  if (lineLoc < -1*bound){
+  if (lineLoc < -bound){
     #ifdef debug
       Serial.println("Left");
     #endif
@@ -46,7 +51,9 @@ void autonomousWrestlingPM7(){
     MS1.setM1Speed(200);
     MS1.setM2Speed(0);
   }
-  else {
+  else { 
+    // Note it is possible for lineLoc to be NaN (all sensors reading 0 after bias)
+    // but it will just go straight if this happens
     #ifdef debug
       Serial.println("Straight");
     #endif

@@ -4,7 +4,7 @@
 
 // DEBUGGING OPTIONS
 #define debug // Uncomment to add debug mode (more verbosity)
-#define sensor // Uncomment to print all sensor values
+//#define sensor // Uncomment to print all sensor values
 
 // Motorshield Initializations
 unsigned char INA1 = 40;
@@ -35,6 +35,10 @@ unsigned char hallSensorIn = A9;
 
 // Range Finder Initializations
 unsigned char rangeFinderIn = A8;
+uint8_t optimalDistance = 10;
+uint8_t optimalDistanceRange = 2;
+uint16_t minRangeVal = int(13*pow(optimalDistance+optimalDistanceRange, -.92)/5 * 1023);
+uint16_t maxRangeVal = int(13*pow(optimalDistance-optimalDistanceRange, -.92)/5 * 1023);
 
 //IR Reflectance Sensor Initializations
 QTRSensors qtr;
@@ -104,6 +108,13 @@ void setup() {
   pinMode(rightWheelAout,INPUT);
   pinMode(leftWheelAout,INPUT);
   pinMode(leftWheelAout,INPUT);
+
+  #ifdef debug
+    Serial.print("Range Finder Optimal Vals: ");
+    Serial.print(minRangeVal);
+    Serial.print(" - ");
+    Serial.println(maxRangeVal);
+  #endif
   
   // Reflectance Sensors Setup
   qtr.setTypeRC();
@@ -141,6 +152,13 @@ while(Serial3.available() > 1){
     stopFlag = false;
     entranceFlag = true;
     autonomousFlag = false;
+
+    // Turn off all brakes
+    MS1.setM1Brake(0);
+    MS1.setM2Brake(0);
+    MS2.setM1Brake(0);
+    MS2.setM2Brake(0);
+    
     delay(2);
   }
   if (buttonPressed == 'S'){
@@ -151,6 +169,19 @@ while(Serial3.available() > 1){
     stopFlag = true;
     entranceFlag = false;
     autonomousFlag = false;
+
+    // Turn motors off 
+    MS1.setM1Speed(0);
+    MS1.setM2Speed(0);
+    MS2.setM1Speed(0);
+    MS2.setM2Speed(0);
+
+    // Turn on all brakes
+    MS1.setM1Brake(400);
+    MS1.setM2Brake(400);
+    MS2.setM1Brake(400);
+    MS2.setM2Brake(400);
+    
     delay(2);
   }
   if (buttonPressed == 'A'){
@@ -161,6 +192,13 @@ while(Serial3.available() > 1){
     stopFlag = false;
     entranceFlag = false;
     autonomousFlag = true;
+
+    // Turn off all brakes
+    MS1.setM1Brake(0);
+    MS1.setM2Brake(0);
+    MS2.setM1Brake(0);
+    MS2.setM2Brake(0);
+    
     delay(2);
   }
   if (buttonPressed == 'T'){
@@ -171,70 +209,86 @@ while(Serial3.available() > 1){
     stopFlag = false;
     entranceFlag = false;
     autonomousFlag = false;
+
+    // Turn motors off when teleop is pressed
+    MS1.setM1Speed(0);
+    MS1.setM2Speed(0);
+    MS2.setM1Speed(0);
+    MS2.setM2Speed(0);
+
+    // Turn off all brakes
+    MS1.setM1Brake(0);
+    MS1.setM2Brake(0);
+    MS2.setM1Brake(0);
+    MS2.setM2Brake(0);
+    
     delay(2);
   }
 
   // Control Values
-  if (buttonPressed == 'L'){
-    tempLeftStickSpeed = Serial3.read();
-    leftStickSpeed = map(tempLeftStickSpeed,-127,127,400,-400);
-    #ifdef debug
-      Serial.print("L: ");
-      Serial.println(leftStickSpeed);
-    #endif
-    MS1.setM1Speed(leftStickSpeed);
+  if (teleoperatedFlag) {
+    if (buttonPressed == 'L'){
+      tempLeftStickSpeed = Serial3.read();
+      leftStickSpeed = map(tempLeftStickSpeed,-127,127,400,-400);
+      #ifdef debug
+        Serial.print("L: ");
+        Serial.println(leftStickSpeed);
+      #endif
+      MS1.setM1Speed(leftStickSpeed);
+    }
+  
+    if (buttonPressed == 'R'){
+      tempRightStickSpeed = Serial3.read();
+      rightStickSpeed = map(tempRightStickSpeed,-127,127,-400,400);
+      #ifdef debug
+        Serial.print("R: ");
+        Serial.println(rightStickSpeed);
+      #endif
+      MS1.setM2Speed(rightStickSpeed);
+    }
+    
+    if(buttonPressed == 'U'){
+      #ifdef debug
+        Serial.println("Fork Up");
+      #endif
+      MS2.setM1Brake(0);
+      MS2.setM1Speed(400);
+    }
+  
+    if (buttonPressed == 'D'){
+      #ifdef debug
+        Serial.println("Fork Down");
+      #endif
+      MS2.setM1Brake(0);
+      MS2.setM1Speed(-400);
+    }
+  
+    if (buttonPressed == 'F'){
+      #ifdef debug
+        Serial.println("Fork Locked");
+      #endif
+      MS2.setM1Speed(0);
+      MS2.setM1Brake(400);
+    }
+  
+    if (buttonPressed == 'W'){
+      tempWiperSpeed = Serial3.read();
+      wiperSpeed = map(tempWiperSpeed,-127,127,-400,400);
+      #ifdef debug
+        Serial.print("W: ");
+        Serial.println(wiperSpeed);
+      #endif
+      MS2.setM2Speed(wiperSpeed);
+    }
   }
-
-  if (buttonPressed == 'R'){
-    tempRightStickSpeed = Serial3.read();
-    rightStickSpeed = map(tempRightStickSpeed,-127,127,-400,400);
-    #ifdef debug
-      Serial.print("R: ");
-      Serial.println(rightStickSpeed);
-    #endif
-    MS1.setM2Speed(rightStickSpeed);
+  else {
+    Serial3.read();
   }
   
-  if(buttonPressed == 'U'){
-    #ifdef debug
-      Serial.println("Fork Up");
-    #endif
-    MS2.setM1Brake(0);
-    MS2.setM1Speed(400);
-  }
-
-  if (buttonPressed == 'D'){
-    #ifdef debug
-      Serial.println("Fork Down");
-    #endif
-    MS2.setM1Brake(0);
-    MS2.setM1Speed(-400);
-  }
-
-  if (buttonPressed == 'F'){
-    #ifdef debug
-      Serial.println("Fork Locked");
-    #endif
-    MS2.setM1Speed(0);
-    MS2.setM1Brake(400);
-  }
-
-  if (buttonPressed == 'W'){
-    tempWiperSpeed = Serial3.read();
-    wiperSpeed = map(tempWiperSpeed,-127,127,-400,400);
-    #ifdef debug
-      Serial.print("W: ");
-      Serial.println(wiperSpeed);
-    #endif
-    MS2.setM2Speed(wiperSpeed);
-  }
 }
 
 if (autonomousFlag) {
   autonomousWrestlingPM7();
-}
-else if (teleoperatedFlag) {
-  // nothin
 }
 else if (entranceFlag){
   WallFollowing();
