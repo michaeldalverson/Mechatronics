@@ -36,7 +36,15 @@ void LineFollowingBias(){
   // Average Bias Values
   for (int i = 0; i < reflectSensorCount; i++){
     biasArray[i] = sumSensorVals[i]/count;
+    #ifdef debug
+      Serial.print(biasArray[i]);
+      Serial.print("\t");
+    #endif
   }
+
+  #ifdef debug
+    Serial.println();
+  #endif
   
   return;
 }

@@ -2,6 +2,10 @@
 #include <DualVNH5019MotorShield.h>
 #include <QTRSensors.h>
 
+// DEBUGGING OPTIONS
+#define debug // Uncomment to add debug mode (more verbosity)
+#define sensor // Uncomment to print all sensor values
+
 // Motorshield Initializations
 unsigned char INA1 = 40;
 unsigned char INB1  = 42;
@@ -16,11 +20,21 @@ unsigned char CS2 = A7;
 DualVNH5019MotorShield MS1;
 DualVNH5019MotorShield MS2(INA1,INB1,PWM1,EN1DIAG1,CS1,INA2,INB2,PWM2,EN2DIAG2,CS2);
 
+// Motor hall-effect sensor intializations
+unsigned char forkliftAout = A3;
+unsigned char forkliftBout = A2;
+unsigned char wiperAout = A5;
+unsigned char wiperBout = A4;
+unsigned char rightWheelAout = A11;
+unsigned char rightWheelBout = A10;
+unsigned char leftWheelAout = A13;
+unsigned char leftWheelBout = A12;
+
 // Hall-Effect Sensor Initializations
-unsigned char hallSensorIn = A8;
+unsigned char hallSensorIn = A9;
 
 // Range Finder Initializations
-unsigned char rangeFinderIn = A9;
+unsigned char rangeFinderIn = A8;
 
 //IR Reflectance Sensor Initializations
 QTRSensors qtr;
@@ -37,7 +51,7 @@ const int reflectSensorIn5 = 31;
 const int reflectSensorIn6 = 33;
 const int reflectSensorIn7 = 35;
 const int reflectSensorIn8 = 37;
-const int reflectSensorLED = 47;
+const int reflectSensorLED = 22;
 
 // Stop Switch Initializations
 const int stopSwitchRightSwiperIn = 18;
@@ -66,35 +80,52 @@ bool autonomousFlag = false;
 int bound = 0.25;
 
 void setup() {
+  
+  // Serial Setup
+  Serial3.begin(9600);
+  Serial.begin(9600);
 
   // Initialize Motor Shields
   MS1.init();
   MS2.init();
+
+  // Motor hall-effect sensor setup
+  pinMode(hallSensorIn,INPUT);
   
   // Hall-Effect Sensor Setup
   pinMode(hallSensorIn,INPUT);
   
   // Range Finder Sensor Setup
-  pinMode(rangeFinderIn,INPUT);
+  pinMode(forkliftAout,INPUT);
+  pinMode(forkliftBout,INPUT);
+  pinMode(wiperAout,INPUT);
+  pinMode(wiperAout,INPUT);
+  pinMode(rightWheelAout,INPUT);
+  pinMode(rightWheelAout,INPUT);
+  pinMode(leftWheelAout,INPUT);
+  pinMode(leftWheelAout,INPUT);
   
   // Reflectance Sensors Setup
   qtr.setTypeRC();
   qtr.setSensorPins((const uint8_t[]){reflectSensorIn1, reflectSensorIn2, reflectSensorIn3, reflectSensorIn4,
                      reflectSensorIn5, reflectSensorIn6, reflectSensorIn7, reflectSensorIn8}, reflectSensorCount);
   qtr.setEmitterPin(reflectSensorLED);
+
+  // Setup bias for qtr
+  #ifdef debug
+    Serial.println("Biasing QTR");
+  #endif
+  LineFollowingBias();
   
   // Stopper Switch Setup
   pinMode(stopSwitchRightSwiperIn,INPUT);
   pinMode(stopSwitchLeftSwiperIn,INPUT);
   pinMode(stopSwitchTopForkIn,INPUT);
   pinMode(stopSwitchBottomForkIn,INPUT);
-  
-  // Serial Setup
-  Serial3.begin(9600);
-  Serial.begin(9600);
-  }
+ 
+}
 
-void loop() {
+void loop() { 
 
 // Read the serial port if there is something in it
 while(Serial3.available() > 1){
@@ -103,7 +134,9 @@ while(Serial3.available() > 1){
 
   // MIDDLE BUTTONS
   if (buttonPressed == 'E'){
-    Serial.println("Entrance Ceremony Commence");
+    #ifdef debug
+      Serial.println("Entrance Received");
+    #endif
     teleoperatedFlag = false;
     stopFlag = false;
     entranceFlag = true;
@@ -111,7 +144,9 @@ while(Serial3.available() > 1){
     delay(2);
   }
   if (buttonPressed == 'S'){
-    Serial.println("STOP");
+    #ifdef debug
+      Serial.println("Stop Received");
+    #endif
     teleoperatedFlag = false;
     stopFlag = true;
     entranceFlag = false;
@@ -119,7 +154,9 @@ while(Serial3.available() > 1){
     delay(2);
   }
   if (buttonPressed == 'A'){
-    Serial.println("Autonomous Wrestling Mode");
+    #ifdef debug
+      Serial.println("Autonomous Received");
+    #endif
     teleoperatedFlag = false;
     stopFlag = false;
     entranceFlag = false;
@@ -127,7 +164,9 @@ while(Serial3.available() > 1){
     delay(2);
   }
   if (buttonPressed == 'T'){
-    Serial.println("Teleoperated Wrestling Mode");
+    #ifdef debug
+      Serial.println("Teleoperated Received");
+    #endif
     teleoperatedFlag = true;
     stopFlag = false;
     entranceFlag = false;
@@ -139,42 +178,54 @@ while(Serial3.available() > 1){
   if (buttonPressed == 'L'){
     tempLeftStickSpeed = Serial3.read();
     leftStickSpeed = map(tempLeftStickSpeed,-127,127,400,-400);
-    Serial.print("L: ");
-    Serial.println(leftStickSpeed);
+    #ifdef debug
+      Serial.print("L: ");
+      Serial.println(leftStickSpeed);
+    #endif
     MS1.setM1Speed(leftStickSpeed);
   }
 
   if (buttonPressed == 'R'){
     tempRightStickSpeed = Serial3.read();
     rightStickSpeed = map(tempRightStickSpeed,-127,127,-400,400);
-    Serial.print("R: ");
-    Serial.println(rightStickSpeed);
+    #ifdef debug
+      Serial.print("R: ");
+      Serial.println(rightStickSpeed);
+    #endif
     MS1.setM2Speed(rightStickSpeed);
   }
   
   if(buttonPressed == 'U'){
-    Serial.println("Fork Up");
+    #ifdef debug
+      Serial.println("Fork Up");
+    #endif
     MS2.setM1Brake(0);
     MS2.setM1Speed(400);
   }
 
   if (buttonPressed == 'D'){
-    Serial.println("Fork Down");
+    #ifdef debug
+      Serial.println("Fork Down");
+    #endif
     MS2.setM1Brake(0);
     MS2.setM1Speed(-400);
   }
 
   if (buttonPressed == 'F'){
-    Serial.println("Fork Locked");
+    #ifdef debug
+      Serial.println("Fork Locked");
+    #endif
     MS2.setM1Speed(0);
     MS2.setM1Brake(400);
   }
 
   if (buttonPressed == 'W'){
-     tempWiperSpeed = Serial3.read();
+    tempWiperSpeed = Serial3.read();
     wiperSpeed = map(tempWiperSpeed,-127,127,-400,400);
-    Serial.print("W: ");
-    Serial.println(wiperSpeed);
+    #ifdef debug
+      Serial.print("W: ");
+      Serial.println(wiperSpeed);
+    #endif
     MS2.setM2Speed(wiperSpeed);
   }
 }
@@ -183,7 +234,7 @@ if (autonomousFlag) {
   autonomousWrestlingPM7();
 }
 else if (teleoperatedFlag) {
-  // Unimplemented
+  // nothin
 }
 else if (entranceFlag){
   WallFollowing();
