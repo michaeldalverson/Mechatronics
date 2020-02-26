@@ -4,7 +4,7 @@
 
 // DEBUGGING OPTIONS
 #define debug // Uncomment to add debug mode (more verbosity)
-//#define sensor // Uncomment to print all sensor values
+#define sensor // Uncomment to print all sensor values
 
 // Motorshield Initializations
 unsigned char INA1 = 40;
@@ -35,10 +35,14 @@ unsigned char hallSensorIn = A9;
 
 // Range Finder Initializations
 unsigned char rangeFinderIn = A8;
-uint8_t optimalDistance = 10;
-uint8_t optimalDistanceRange = 2;
+uint8_t optimalDistance = 15;
+uint8_t optimalDistanceRange = 5;
 uint16_t minRangeVal = int(13*pow(optimalDistance+optimalDistanceRange, -.92)/5 * 1023);
 uint16_t maxRangeVal = int(13*pow(optimalDistance-optimalDistanceRange, -.92)/5 * 1023);
+
+//Rangefinder filtering
+double rangeFinderAlpha = 0.2;
+uint16_t distanceValue = 0;
 
 //IR Reflectance Sensor Initializations
 QTRSensors qtr;

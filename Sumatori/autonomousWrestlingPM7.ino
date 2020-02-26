@@ -1,5 +1,7 @@
 void autonomousWrestlingPM7(){
 
+  delay(100);
+
   // Read qtr values
   qtr.read(reflectSensorValues);
 
@@ -37,19 +39,41 @@ void autonomousWrestlingPM7(){
   #endif
 
   // Change motor speed depending on line location
-  if (lineLoc < -bound){
-    #ifdef debug
-      Serial.println("Left");
-    #endif
+  if (lineLoc < -2.5){
     MS1.setM2Speed(200);
-    MS1.setM1Speed(0);
+    MS1.setM1Speed(200);
+    delay(100);
+    MS1.setM2Speed(200);
+    MS1.setM1Speed(-200);
+    delay(100);
+  }
+  else if (lineLoc > 2.5){
+     MS1.setM2Speed(-200);
+     MS1.setM1Speed(-200);
+     delay(100);
+     MS1.setM2Speed(200);
+     MS1.setM1Speed(-200);
+     delay(100);
+  }
+  else if (lineLoc < -bound){
+    #ifdef debug
+      Serial.print("Left L: ");
+      Serial.print(-200);
+      Serial.print(" R: ");
+      Serial.println(400);
+    #endif
+    MS1.setM2Speed(300);
+    MS1.setM1Speed(-100);
   }
   else if (lineLoc > bound){
     #ifdef debug
-      Serial.println("Right");
+      Serial.print("Right L: ");
+      Serial.print(-400);
+      Serial.print(" R: ");
+      Serial.println(200);
     #endif
-    MS1.setM1Speed(200);
-    MS1.setM2Speed(0);
+    MS1.setM1Speed(-300);
+    MS1.setM2Speed(100);
   }
   else { 
     // Note it is possible for lineLoc to be NaN (all sensors reading 0 after bias)
@@ -57,8 +81,8 @@ void autonomousWrestlingPM7(){
     #ifdef debug
       Serial.println("Straight");
     #endif
-    MS1.setM1Speed(100);
-    MS1.setM2Speed(100);
+    MS1.setM1Speed(-400);
+    MS1.setM2Speed(400);
   }
   
   return;
