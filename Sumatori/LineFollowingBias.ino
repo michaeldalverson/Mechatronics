@@ -14,7 +14,7 @@ void LineFollowingBias(){
   }
 
   // Get the average biasing
-  while(timeElapsed < 1000){
+  while(timeElapsed < 2500){
     // Get time elapsed
     timeElapsed = millis() - startTime;
 

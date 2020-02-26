@@ -40,19 +40,19 @@ void autonomousWrestlingPM7(){
 
   // Change motor speed depending on line location
   if (lineLoc < -2.5){
-    MS1.setM2Speed(200);
-    MS1.setM1Speed(200);
+    MS1.setM2Speed(int(lineFollowingSpeedMultiplier*200));
+    MS1.setM1Speed(int(lineFollowingSpeedMultiplier*200));
     delay(100);
-    MS1.setM2Speed(200);
-    MS1.setM1Speed(-200);
+    MS1.setM2Speed(int(lineFollowingSpeedMultiplier*200));
+    MS1.setM1Speed(int(lineFollowingSpeedMultiplier*-200));
     delay(100);
   }
   else if (lineLoc > 2.5){
-     MS1.setM2Speed(-200);
-     MS1.setM1Speed(-200);
+     MS1.setM2Speed(int(lineFollowingSpeedMultiplier*-200));
+     MS1.setM1Speed(int(lineFollowingSpeedMultiplier*-200));
      delay(100);
-     MS1.setM2Speed(200);
-     MS1.setM1Speed(-200);
+     MS1.setM2Speed(int(lineFollowingSpeedMultiplier*200));
+     MS1.setM1Speed(int(lineFollowingSpeedMultiplier*-200));
      delay(100);
   }
   else if (lineLoc < -bound){
@@ -62,8 +62,8 @@ void autonomousWrestlingPM7(){
       Serial.print(" R: ");
       Serial.println(400);
     #endif
-    MS1.setM2Speed(300);
-    MS1.setM1Speed(-100);
+    MS1.setM2Speed(int(lineFollowingSpeedMultiplier*300));
+    MS1.setM1Speed(int(lineFollowingSpeedMultiplier*-100));
   }
   else if (lineLoc > bound){
     #ifdef debug
@@ -72,8 +72,8 @@ void autonomousWrestlingPM7(){
       Serial.print(" R: ");
       Serial.println(200);
     #endif
-    MS1.setM1Speed(-300);
-    MS1.setM2Speed(100);
+    MS1.setM1Speed(int(lineFollowingSpeedMultiplier*-300));
+    MS1.setM2Speed(int(lineFollowingSpeedMultiplier*100));
   }
   else { 
     // Note it is possible for lineLoc to be NaN (all sensors reading 0 after bias)
@@ -81,8 +81,8 @@ void autonomousWrestlingPM7(){
     #ifdef debug
       Serial.println("Straight");
     #endif
-    MS1.setM1Speed(-400);
-    MS1.setM2Speed(400);
+    MS1.setM1Speed(int(lineFollowingSpeedMultiplier*-200));
+    MS1.setM2Speed(int(lineFollowingSpeedMultiplier*200));
   }
   
   return;

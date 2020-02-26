@@ -50,6 +50,7 @@ QTRSensors qtr;
 const int8_t reflectSensorCount = 8;
 int16_t reflectSensorValues[reflectSensorCount];
 uint16_t biasArray[reflectSensorCount];
+float lineFollowingSpeedMultiplier = .55;
 
 const int reflectSensorIn1 = 23;
 const int reflectSensorIn2 = 25;
