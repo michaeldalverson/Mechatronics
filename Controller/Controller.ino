@@ -35,6 +35,7 @@ bool entranceCeremony;
 bool autonomousWrestling;
 bool teleWrestling;
 bool STOP;
+char currButton;
 
 // Stick Hysteresis
 uint8_t stickHysteresis = 50; // Sends 0 stick values if -x+512 < stickVal < x+512
@@ -88,7 +89,7 @@ void setup() {
 
   pinMode(tempWiperControl,INPUT);
   //Serial
-
+  currButton = 'Z';
   controllerSerial.begin(9600);
   Serial.begin(9600);
 }
@@ -200,36 +201,52 @@ void loop() {
 
   // MAIN BUTTONS & LED CONTROL
   if (entranceCeremony){
+    controllerSerial.write('S');
+     for (int i = 0; i<3; i++){
     controllerSerial.write('E');
+    }
     delay(35);
     digitalWrite(ceremonyLEDOut,HIGH);
     digitalWrite(stopAllLEDOut,LOW);
     digitalWrite(teleLEDOut,LOW);
     digitalWrite(autoLEDOut,LOW);
+    currButton = 'E';
   }
   if (teleWrestling){
+    controllerSerial.write('S');
+     for (int i = 0; i<3; i++){
     controllerSerial.write('T');
+    }
     delay(35);
-     digitalWrite(ceremonyLEDOut,LOW);
+    digitalWrite(ceremonyLEDOut,LOW);
     digitalWrite(stopAllLEDOut,LOW);
     digitalWrite(teleLEDOut,HIGH);
     digitalWrite(autoLEDOut,LOW);
+    currButton = 'T';
   }
    if (autonomousWrestling){
-    delay(35);
+    controllerSerial.write('S');
+    for (int i = 0; i<3; i++){
     controllerSerial.write('A');
-     digitalWrite(ceremonyLEDOut,LOW);
+    }
+    delay(35);
+    digitalWrite(ceremonyLEDOut,LOW);
     digitalWrite(stopAllLEDOut,LOW);
     digitalWrite(teleLEDOut,LOW);
     digitalWrite(autoLEDOut,HIGH);
+    currButton = 'A';
   }
    if (STOP){
-    delay(35);
+     for (int i = 0; i<3; i++){
     controllerSerial.write('S');
+    }
+    delay(35);
+   
     digitalWrite(ceremonyLEDOut,LOW);
     digitalWrite(stopAllLEDOut,HIGH);
     digitalWrite(teleLEDOut,LOW);
     digitalWrite(autoLEDOut,LOW);
+    currButton = 'S';
   }
   ////Temporary wiper code
   rightWipeHorizontal = analogRead(tempWiperControl);

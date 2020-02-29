@@ -4,7 +4,8 @@
 
 // DEBUGGING OPTIONS
 #define debug // Uncomment to add debug mode (more verbosity)
-#define sensor // Uncomment to print all sensor values
+//#define sensor // Uncomment to print all sensor values
+//#define serial // Uncomment to view serial debugging
 
 // Motorshield Initializations
 unsigned char INA1 = 40;
@@ -98,9 +99,6 @@ void setup() {
   MS1.init();
   MS2.init();
 
-  // Motor hall-effect sensor setup
-  pinMode(hallSensorIn,INPUT);
-  
   // Hall-Effect Sensor Setup
   pinMode(hallSensorIn,INPUT);
   
@@ -138,13 +136,18 @@ void setup() {
   pinMode(stopSwitchLeftSwiperIn,INPUT);
   pinMode(stopSwitchTopForkIn,INPUT);
   pinMode(stopSwitchBottomForkIn,INPUT);
- 
+  
 }
 
 void loop() { 
 
 // Read the serial port if there is something in it
-while(Serial3.available() > 1){
+while(Serial3.available()>1){
+
+  #ifdef serial
+    Serial.print("Buffer: ");
+    Serial.println(Serial3.available());
+  #endif
   // Read char
   char buttonPressed = Serial3.read();
 
@@ -164,7 +167,7 @@ while(Serial3.available() > 1){
     MS2.setM1Brake(0);
     MS2.setM2Brake(0);
     
-    delay(2);
+   // delay(20);
   }
   if (buttonPressed == 'S'){
     #ifdef debug
@@ -187,7 +190,7 @@ while(Serial3.available() > 1){
     MS2.setM1Brake(400);
     MS2.setM2Brake(400);
     
-    delay(2);
+   // delay(20);
   }
   if (buttonPressed == 'A'){
     #ifdef debug
@@ -204,7 +207,7 @@ while(Serial3.available() > 1){
     MS2.setM1Brake(0);
     MS2.setM2Brake(0);
     
-    delay(2);
+   // delay(20);
   }
   if (buttonPressed == 'T'){
     #ifdef debug
@@ -227,7 +230,7 @@ while(Serial3.available() > 1){
     MS2.setM1Brake(0);
     MS2.setM2Brake(0);
     
-    delay(2);
+   // delay(20);
   }
 
   // Control Values
@@ -296,7 +299,8 @@ if (autonomousFlag) {
   autonomousWrestlingPM7();
 }
 else if (entranceFlag){
-  WallFollowing();
+  HallEffectPM8();
+  //WallFollowing();
 }
 else if (stopFlag) {
   // Unimplemented
