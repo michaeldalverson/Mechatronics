@@ -7,6 +7,10 @@
 //#define sensor // Uncomment to print all sensor values
 //#define serial // Uncomment to view serial debugging
 
+// Serial Communications
+const uint8_t serialBufferSize = 20;
+char serialBufferArray[serialBufferSize] = "";
+
 // Motorshield Initializations
 unsigned char INA1 = 40;
 unsigned char INB1  = 42;
@@ -33,6 +37,7 @@ unsigned char leftWheelBout = A12;
 
 // Hall-Effect Sensor Initializations
 unsigned char hallSensorIn = A9;
+uint16_t hallSensorVal = 512;
 
 // Range Finder Initializations
 unsigned char rangeFinderIn = A8;
@@ -144,12 +149,13 @@ void loop() {
 // Read the serial port if there is something in it
 while(Serial3.available()>1){
 
-  #ifdef serial
-    Serial.print("Buffer: ");
-    Serial.println(Serial3.available());
-  #endif
   // Read char
   char buttonPressed = Serial3.read();
+
+  #ifdef serial
+    Serial.print("buttonPressed: ");
+    Serial.println(buttonPressed);
+  #endif
 
   // MIDDLE BUTTONS
   if (buttonPressed == 'E'){
@@ -166,8 +172,6 @@ while(Serial3.available()>1){
     MS1.setM2Brake(0);
     MS2.setM1Brake(0);
     MS2.setM2Brake(0);
-    
-   // delay(20);
   }
   if (buttonPressed == 'S'){
     #ifdef debug
@@ -189,8 +193,6 @@ while(Serial3.available()>1){
     MS1.setM2Brake(400);
     MS2.setM1Brake(400);
     MS2.setM2Brake(400);
-    
-   // delay(20);
   }
   if (buttonPressed == 'A'){
     #ifdef debug
@@ -206,8 +208,6 @@ while(Serial3.available()>1){
     MS1.setM2Brake(0);
     MS2.setM1Brake(0);
     MS2.setM2Brake(0);
-    
-   // delay(20);
   }
   if (buttonPressed == 'T'){
     #ifdef debug
@@ -229,8 +229,6 @@ while(Serial3.available()>1){
     MS1.setM2Brake(0);
     MS2.setM1Brake(0);
     MS2.setM2Brake(0);
-    
-   // delay(20);
   }
 
   // Control Values
@@ -296,14 +294,14 @@ while(Serial3.available()>1){
 }
 
 if (autonomousFlag) {
-  autonomousWrestlingPM7();
+  LineFollowing();
 }
 else if (entranceFlag){
-  HallEffectPM8();
+  HallEffect();
   //WallFollowing();
 }
 else if (stopFlag) {
-  // Unimplemented
+  // Do nothing
 }
 
 
