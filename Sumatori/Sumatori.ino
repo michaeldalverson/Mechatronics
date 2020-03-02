@@ -4,7 +4,7 @@
 
 // DEBUGGING OPTIONS
 #define debug // Uncomment to add debug mode (more verbosity)
-//#define sensor // Uncomment to print all sensor values
+#define sensor // Uncomment to print all sensor values
 #define serial // Uncomment to view serial debugging
 
 // Serial Communications
@@ -153,11 +153,13 @@ if (autonomousFlag) {
   LineFollowing();
 }
 else if (entranceFlag){
-  HallEffect();
+  if (HallEffect()){
+    Serial.println("Hall Effect Is True!");
+  }
   //WallFollowing();
 }
 else if (stopFlag) {
-  StopCommand();
+  // Do Nothing in here
 }
 
 

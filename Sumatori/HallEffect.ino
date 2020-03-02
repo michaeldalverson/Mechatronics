@@ -1,4 +1,4 @@
-void HallEffect(){
+bool HallEffect(){
   
   while (true){
     // Read vals
@@ -8,18 +8,17 @@ void HallEffect(){
       Serial.println(hallSensorVal);
     #endif
 
-    // If less than 1.5 inches away, break
+    // If less than 1.5 inches away return true
     if (hallSensorVal > 960 || hallSensorVal < 60){
       #ifdef debug
         Serial.println("Magnet Detected!");
       #endif
-      break;
+      return true;
     }
 
-    // Empty buffer and check for S and delay a bit
-    if (Serial3.read() == "S"){
-      StopCommand();
+    // Else return false and continue checking
+    else{
+      return false;
     }
-    delay(10);
   }
 }

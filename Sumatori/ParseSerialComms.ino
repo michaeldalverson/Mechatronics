@@ -5,6 +5,7 @@ void ParseSerialComms() {
     if (Serial3.read() == char(2)){
 
       bool midChar = false;
+      bool buttonPressed = false;
       #ifdef serial
         Serial.print("Packet Received: ");
       #endif
@@ -37,27 +38,61 @@ void ParseSerialComms() {
           if (serialVal == 'R'){
             delay(5);
             tempRightStickSpeed = Serial3.read();
-            rightStickSpeed = map(tempRightStickSpeed, -128, 127, -400, 400);
+            if (tempRightStickSpeed == 1) {
+              rightStickSpeed = 0;
+            }
+            else{
+              rightStickSpeed = map(tempRightStickSpeed, -127, 127, -400, 400);
+            }
           }
 
           // Left Stick
           else if (serialVal == 'L'){
             delay(5);
             tempLeftStickSpeed = Serial3.read();
-            leftStickSpeed = map(tempLeftStickSpeed, -128, 127, 400, -400);
+            if (tempLeftStickSpeed == 1) {
+              leftStickSpeed = 0;
+            }
+            else{
+              leftStickSpeed = map(tempLeftStickSpeed, -127, 127, 400, -400);
+            }
+
           }
 
           // Wiper
           else if (serialVal == 'W'){
             delay(5);
             tempWiperSpeed = Serial3.read();
-            wiperSpeed = map(tempWiperSpeed, -128, 127, -400, 400);
+            if (tempWiperSpeed == 1) {
+              wiperSpeed = 0;
+            }
+            else{
+              wiperSpeed = map(tempWiperSpeed, -127, 127, -400, 400);
+            }
           }
         }
         
         // Read button values
         else {
-          // OIJAOISJDJOAIJSDOIJASDOIJASDOIJASODIJASOIJD
+          if (buttonPressed){
+            continue;
+          }
+          else if (serialVal == 'E'){
+            EntranceCommand();
+            buttonPressed = true;
+          }
+          else if (serialVal == 'T'){
+            TeleCommand();
+            buttonPressed = true;
+          }
+          else if (serialVal == 'A'){
+            AutoCommand();
+            buttonPressed = true;
+          }
+          else if (serialVal == 'S'){
+            StopCommand();
+            buttonPressed = true;
+          }
         }
       }
       #ifdef serial

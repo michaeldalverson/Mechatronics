@@ -149,7 +149,7 @@ void loop() {
     leftStickZero = true;
   }
   else {
-    leftStickSpeed = map(leftStickVal, 0, 1023, -128, 127);
+    leftStickSpeed = map(leftStickVal, 0, 1023, -127, 127);
     leftStickZero = false;
   }
 
@@ -159,7 +159,7 @@ void loop() {
     rightStickZero = true;
   }
   else {
-    rightStickSpeed = map(rightStickVal, 0, 1023, 127, -128);
+    rightStickSpeed = map(rightStickVal, 0, 1023, 127, -127);
     rightStickZero = false;
   }
   
@@ -169,7 +169,7 @@ void loop() {
     wipeZero = true;
   }
   else {
-    wipeVal = map(rightWipeHorizontal, 0, 1023, -128, 127);
+    wipeVal = map(rightWipeHorizontal, 0, 1023, -127, 127);
     wipeZero = false;
   }
 
@@ -204,7 +204,7 @@ void loop() {
   else if (zeroCountLeft <4){
     leftStickSpeed = 0;
     serialWriteString += 'L';
-    serialWriteString += char(leftStickSpeed);
+    serialWriteString += char(1);
     commands++;
     zeroCountLeft++;
   }
@@ -219,7 +219,7 @@ void loop() {
   else if (zeroCountRight < 4){
     rightStickSpeed = 0;
     serialWriteString += 'R';
-    serialWriteString += char(rightStickSpeed);
+    serialWriteString += char(1);
     commands++;
     zeroCountRight++;
   }
@@ -234,13 +234,13 @@ void loop() {
   else if (zeroCountWipe < 4){
     wipeVal = 0;
     serialWriteString += 'W';
-    serialWriteString += char(wipeVal);
+    serialWriteString += char(1);
     commands++;
     zeroCountWipe++;
   }
 
   // WRITE MID VALUE
-    serialWriteString += char(3);
+  serialWriteString += char(3);
 
   // Write Fork State
   if (forkState != 'Z'){
@@ -284,11 +284,16 @@ void loop() {
 
   // ***************************** SERIAL WRITES ******************************
   if (commands > 0){
+    // *** WARNING *** SENDING 0 USING CHARS DOES NOT WORK BECAUSE IT TERMINATES THE PACKET STRING
     serialWriteString += char(4);
 
+    // Convert string into char array using this magic
     char* buf = (char*) malloc(sizeof(char)*serialWriteString.length()+1);
     serialWriteString.toCharArray(buf, serialWriteString.length()+1);
+  
+    // Send char array packet to mega
     controllerSerial.write(buf);
+    
     #ifdef outputs
       Serial.print("L: ");
       Serial.print(serialWriteString.length());
@@ -296,10 +301,12 @@ void loop() {
       Serial.print(buf);
       Serial.println();
     #endif
+
+    // Deallocated the buffer char array and reset counter
     free(buf);
     commands = 0;
   }
-  // Reset packet
+  // Reset packet string
   serialWriteString = "";
 
 }
