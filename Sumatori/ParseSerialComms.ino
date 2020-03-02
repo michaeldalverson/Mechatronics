@@ -6,6 +6,8 @@ void ParseSerialComms() {
 
       bool midChar = false;
       bool buttonPressed = false;
+      bool forkReceived = false;
+      
       #ifdef serial
         Serial.print("Packet Received: ");
       #endif
@@ -74,6 +76,18 @@ void ParseSerialComms() {
         
         // Read button values
         else {
+          if (serialVal == 'U') {
+            forkLiftVal = 'U';
+            forkReceived = true;
+          }
+          else if (serialVal == 'D') {
+            forkLiftVal = 'D';
+            forkReceived = true;
+          }
+          else if (serialVal == 'F') {
+            forkLiftVal = 'F';
+            forkReceived = true;
+          }
           if (buttonPressed){
             continue;
           }
@@ -95,21 +109,18 @@ void ParseSerialComms() {
           }
         }
       }
+
+      if (!forkReceived){
+        forkLiftVal = 'Z';
+      }
+      
       #ifdef serial
         Serial.println();
-        
       #endif   
-      #ifdef debug
-        Serial.print("R: ");
-        Serial.println(rightStickSpeed);
-        Serial.print("L: ");
-        Serial.println(leftStickSpeed);
-        Serial.print("W: ");
-        Serial.println(wiperSpeed);
-      #endif
     }
   }
 }
+
 
 
 

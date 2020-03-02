@@ -26,7 +26,8 @@ void TeleCommand(){
   leftStickSpeed = 0;
   tempLeftStickSpeed = 0;
   leftStickDirection = 0;
-  forkLiftDirection = 0;
+  forkLiftVal = 'Z';
   wiperSpeed = 0;
   tempWiperSpeed = 0;
 }
+

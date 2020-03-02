@@ -7,6 +7,8 @@ void StopCommand(){
     entranceFlag = false;
     autonomousFlag = false;
 
+    entranceStep = 0;
+
     // Turn motors off 
     MS1.setM1Speed(0);
     MS1.setM2Speed(0);
@@ -19,3 +21,4 @@ void StopCommand(){
     MS2.setM1Brake(400);
     MS2.setM2Brake(400);
 }
+

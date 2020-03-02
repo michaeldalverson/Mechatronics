@@ -4,8 +4,8 @@
 
 // DEBUGGING OPTIONS
 #define debug // Uncomment to add debug mode (more verbosity)
-#define sensor // Uncomment to print all sensor values
-#define serial // Uncomment to view serial debugging
+//#define sensor // Uncomment to print all sensor values
+//#define serial // Uncomment to view serial debugging
 
 // Serial Communications
 const uint8_t serialBufferSize = 16;
@@ -39,6 +39,10 @@ unsigned char leftWheelBout = A12;
 // Hall-Effect Sensor Initializations
 unsigned char hallSensorIn = A9;
 uint16_t hallSensorVal = 512;
+const uint8_t hallEffectActivation = 176;
+const uint16_t hallSensorMax = 1023-hallEffectActivation;
+const uint16_t hallSensorMin = hallEffectActivation;
+const double hallSensorAlpha = 0.6;
 
 // Range Finder Initializations
 unsigned char rangeFinderIn = A8;
@@ -46,10 +50,9 @@ uint8_t optimalDistance = 15;
 uint8_t optimalDistanceRange = 5;
 uint16_t minRangeVal = int(13*pow(optimalDistance+optimalDistanceRange, -.92)/5 * 1023);
 uint16_t maxRangeVal = int(13*pow(optimalDistance-optimalDistanceRange, -.92)/5 * 1023);
-
-//Rangefinder filtering
-double rangeFinderAlpha = 0.2;
+const double rangeFinderAlpha = 0.6;
 uint16_t distanceValue = 0;
+uint8_t rangeThreshold = 35;
 
 //IR Reflectance Sensor Initializations
 QTRSensors qtr;
@@ -57,7 +60,7 @@ QTRSensors qtr;
 const int8_t reflectSensorCount = 8;
 int16_t reflectSensorValues[reflectSensorCount];
 uint16_t biasArray[reflectSensorCount];
-float lineFollowingSpeedMultiplier = .55;
+const float lineFollowingSpeedMultiplier = .55;
 
 const int reflectSensorIn1 = 23;
 const int reflectSensorIn2 = 25;
@@ -82,9 +85,12 @@ int8_t tempRightStickSpeed = 0;
 int leftStickSpeed = 0;
 int8_t tempLeftStickSpeed = 0;
 bool leftStickDirection;
-int forkLiftDirection = 0;
+char forkLiftVal = 'Z';
 int wiperSpeed = 0;
 int8_t tempWiperSpeed = 0;
+
+// Entrance ceremony
+uint8_t entranceStep = 0;
 
 // Controller Mode
 bool teleoperatedFlag = false;
@@ -142,21 +148,40 @@ void setup() {
   pinMode(stopSwitchLeftSwiperIn,INPUT);
   pinMode(stopSwitchTopForkIn,INPUT);
   pinMode(stopSwitchBottomForkIn,INPUT);
-  
 }
 
 void loop() { 
 
+// Read controller inputs
 ParseSerialComms();
 
-if (autonomousFlag) {
+if (teleoperatedFlag){
+  Teleoperation();
+}
+else if (autonomousFlag) {
   LineFollowing();
 }
 else if (entranceFlag){
-  if (HallEffect()){
-    Serial.println("Hall Effect Is True!");
+  if (entranceStep == 0){
+    if (HallEffect()){
+      #ifdef debug
+        Serial.println("Moving to step 1!");
+      #endif
+      entranceStep++;
+    }
   }
-  //WallFollowing();
+  else if (entranceStep == 1){
+    if (!WallFollowing()){
+      #ifdef debug
+        Serial.println("Moving to step 2!");
+      #endif
+      entranceStep++;
+    }
+  }
+  else if (entranceStep == 2){
+    StopCommand();
+    entranceStep++;
+  }
 }
 else if (stopFlag) {
   // Do Nothing in here
@@ -164,3 +189,4 @@ else if (stopFlag) {
 
 
 }
+

@@ -1,11 +1,11 @@
 void AutoCommand(){   
   #ifdef debug
-    Serial.println("Entrance Received");
+    Serial.println("Autonomous Received");
   #endif
   teleoperatedFlag = false;
   stopFlag = false;
-  entranceFlag = true;
-  autonomousFlag = false;
+  entranceFlag = false;
+  autonomousFlag = true;
 
   // Turn off all brakes
   MS1.setM1Brake(0);
@@ -13,3 +13,4 @@ void AutoCommand(){
   MS2.setM1Brake(0);
   MS2.setM2Brake(0);
 }
+

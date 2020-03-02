@@ -1,15 +1,16 @@
 bool HallEffect(){
   
   while (true){
-    // Read vals
-    hallSensorVal = analogRead(hallSensorIn);
+    // Read vals with IIR
+    hallSensorVal = int(((1-hallSensorAlpha)*hallSensorVal) + (hallSensorAlpha*analogRead(hallSensorIn)));
+    
     #ifdef sensor
       Serial.print("Hall: ");
       Serial.println(hallSensorVal);
     #endif
 
     // If less than 1.5 inches away return true
-    if (hallSensorVal > 960 || hallSensorVal < 60){
+    if (hallSensorVal >= hallSensorMax || hallSensorVal <= hallSensorMin){
       #ifdef debug
         Serial.println("Magnet Detected!");
       #endif
@@ -22,3 +23,4 @@ bool HallEffect(){
     }
   }
 }
+
