@@ -3,13 +3,14 @@
 #include <QTRSensors.h>
 
 // DEBUGGING OPTIONS
-#define debug // Uncomment to add debug mode (more verbosity)
+//#define debug // Uncomment to add debug mode (more verbosity)
 //#define sensor // Uncomment to print all sensor values
-//#define serial // Uncomment to view serial debugging
+#define serial // Uncomment to view serial debugging
 
 // Serial Communications
-const uint8_t serialBufferSize = 20;
-char serialBufferArray[serialBufferSize] = "";
+const uint8_t serialBufferSize = 16;
+char serialBufferArray[serialBufferSize] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+char serialVal;
 
 // Motorshield Initializations
 unsigned char INA1 = 40;
@@ -145,6 +146,10 @@ void setup() {
 }
 
 void loop() { 
+
+while (true) {
+  ParseSerialComms();
+}
 
 // Read the serial port if there is something in it
 while(Serial3.available()>1){

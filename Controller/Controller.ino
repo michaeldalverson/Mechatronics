@@ -5,9 +5,8 @@
 
 //Serial Communication
 SoftwareSerial controllerSerial(2,3);
-const uint8_t serialWriteLength = 15;
-char serialWriteValues[serialWriteLength] = {'-'};
-byte serialWriteLocation = 0;
+String serialWriteString = "";
+uint8_t commands = 0;
 
 //Analog Pins
 //Wheel control sticks
@@ -51,13 +50,19 @@ uint16_t maxStickActivation = 512 + stickHysteresis;
 uint16_t leftStickVal;
 int8_t leftStickSpeed;
 bool leftStickZero = true;
-int zeroCountLeft = 0;
+int zeroCountLeft = 4;
 
 //Right Wheel
 uint16_t rightStickVal;
 int8_t rightStickSpeed;
 bool rightStickZero = true;
-int zeroCountRight = 0;
+int zeroCountRight = 4;
+
+//Wiper 
+uint16_t rightWipeHorizontal;
+int8_t wipeVal;
+bool wipeZero = true;
+int zeroCountWipe = 4;
 
 //Forklift
 bool forkUp;
@@ -65,11 +70,6 @@ bool forkDown;
 char forkState;
 bool forkZero = true;
 
-//Wiper 
-uint16_t rightWipeHorizontal;
-int8_t wipeVal;
-bool wipeZero = true;
-int zeroCountWipe = 0;
 void setup() {
   
   // Controller sticks
@@ -102,7 +102,7 @@ void setup() {
 
 void loop() {
   
-  delay(30);
+  delay(75);
   
   // ***************************** READ INPUTS ******************************
   // Read Sticks
@@ -149,7 +149,7 @@ void loop() {
     leftStickZero = true;
   }
   else {
-    leftStickSpeed = map(leftStickVal, 0, 1023, -127,127);
+    leftStickSpeed = map(leftStickVal, 0, 1023, 0, 255);
     leftStickZero = false;
   }
 
@@ -159,7 +159,7 @@ void loop() {
     rightStickZero = true;
   }
   else {
-    rightStickSpeed = map(rightStickVal, 0, 1023, 127,-127);
+    rightStickSpeed = map(rightStickVal, 0, 1023, 255, 0);
     rightStickZero = false;
   }
   
@@ -169,23 +169,20 @@ void loop() {
     wipeZero = true;
   }
   else {
-    wipeVal = map(rightWipeHorizontal, 0, 1023, -127,127);
+    wipeVal = map(rightWipeHorizontal, 0, 1023, 0, 255);
     wipeZero = false;
   }
 
   // Forklift
   if ((forkUp) && (!forkDown)) {
-    Serial.println("Fork Up");
     forkZero = false;
     forkState = 'U';
   }
   else if ((forkDown) && (!forkUp)) {
-    Serial.println("Fork Down");
     forkState = 'D';
     forkZero = false;
   }
   else if (!forkZero){
-    Serial.println("Fork Locked");
     forkState = 'F';
     forkZero = true;
   }
@@ -193,76 +190,92 @@ void loop() {
     forkState = 'Z';
   }
 
-  // ***************************** SETUP SERIAL WRITES ******************************
+  // ***************************** BUILD PACKETS ******************************
+  // Begin with start of packet
+  serialWriteString += char(2);
  
   // Write Left Stick if they are not zero
   if (!leftStickZero) {
     zeroCountLeft = 0;
-    serialWriteValues[serialWriteLocation++] = 'L';
-    serialWriteValues[serialWriteLocation++] = leftStickSpeed;
+    serialWriteString += 'L';
+    serialWriteString += char(leftStickSpeed);
+    commands++;
   }
   else if (zeroCountLeft <4){
     leftStickSpeed = 0;
-    serialWriteValues[serialWriteLocation++] = 'L';
-    serialWriteValues[serialWriteLocation++] = leftStickSpeed;
+    serialWriteString += 'L';
+    serialWriteString += char(leftStickSpeed);
+    commands++;
     zeroCountLeft++;
   }
 
   // Write Right Stick if they are not zero
   if (!rightStickZero) {
-    serialWriteValues[serialWriteLocation++] = 'R';
-    serialWriteValues[serialWriteLocation++] = rightStickSpeed;
+    serialWriteString += 'R';
+    serialWriteString += char(rightStickSpeed);
+    commands++;
     zeroCountRight = 0;
   }
   else if (zeroCountRight < 4){
     rightStickSpeed = 0;
-    serialWriteValues[serialWriteLocation++] = 'R';
-    serialWriteValues[serialWriteLocation++] = rightStickSpeed;
+    serialWriteString += 'R';
+    serialWriteString += char(rightStickSpeed);
+    commands++;
     zeroCountRight++;
   }
 
   // Temp Wiper write
   if (!wipeZero) {
-    serialWriteValues[serialWriteLocation++] = 'W';
-    serialWriteValues[serialWriteLocation++] = wipeVal;
+    serialWriteString += 'W';
+    serialWriteString += char(wipeVal);
+    commands++;
     zeroCountWipe = 0;
   }
-   else if (zeroCountWipe < 4){
+  else if (zeroCountWipe < 4){
     wipeVal = 0;
-    serialWriteValues[serialWriteLocation++] = 'W';
-    serialWriteValues[serialWriteLocation++] = wipeVal;
+    serialWriteString += 'W';
+    serialWriteString += char(wipeVal);
+    commands++;
     zeroCountWipe++;
   }
 
+  // WRITE MID VALUE
+    serialWriteString += char(3);
+
   // Write Fork State
   if (forkState != 'Z'){
-    serialWriteValues[serialWriteLocation++] = forkState;
+    serialWriteString += forkState;
+    commands++;
   }
 
   // MAIN BUTTONS & LED CONTROL
   if (entranceCeremony){
-    serialWriteValues[serialWriteLocation++] = 'E';
+    serialWriteString += 'E';
+    commands++;
     digitalWrite(ceremonyLEDOut,HIGH);
     digitalWrite(stopAllLEDOut,LOW);
     digitalWrite(teleLEDOut,LOW);
     digitalWrite(autoLEDOut,LOW);
   }
   if (teleWrestling){
-    serialWriteValues[serialWriteLocation++] = 'T';
+    serialWriteString += 'T';
+    commands++;
     digitalWrite(ceremonyLEDOut,LOW);
     digitalWrite(stopAllLEDOut,LOW);
     digitalWrite(teleLEDOut,HIGH);
     digitalWrite(autoLEDOut,LOW);
   }
    if (autonomousWrestling){
-    serialWriteValues[serialWriteLocation++] = 'A';
+    serialWriteString += 'A';
+    commands++;
     digitalWrite(ceremonyLEDOut,LOW);
     digitalWrite(stopAllLEDOut,LOW);
     digitalWrite(teleLEDOut,LOW);
     digitalWrite(autoLEDOut,HIGH);
   }
    if (STOP){
-    serialWriteValues[serialWriteLocation++] = 'S';
+    serialWriteString += 'S';
+    commands++;
     digitalWrite(ceremonyLEDOut,LOW);
     digitalWrite(stopAllLEDOut,HIGH);
     digitalWrite(teleLEDOut,LOW);
@@ -270,20 +283,23 @@ void loop() {
   }
 
   // ***************************** SERIAL WRITES ******************************
-  if (serialWriteLocation > 0){
-    serialWriteValues[serialWriteLength-1] = '*';
+  if (commands > 0){
+    serialWriteString += char(4);
+
+    char* buf = (char*) malloc(sizeof(char)*serialWriteString.length()+1);
+    serialWriteString.toCharArray(buf, serialWriteString.length()+1);
+    controllerSerial.write(buf);
     #ifdef outputs
-      Serial.println("Sending");
-      for (int i = 0; i++; i<serialWriteLength){
-        Serial.print(serialWriteValues[i]);
-      }
+      Serial.print("L: ");
+      Serial.print(serialWriteString.length());
+      Serial.print(" Packet: ");
+      Serial.print(buf);
       Serial.println();
     #endif
-    Serial.write(serialWriteValues, serialWriteLength);
-    serialWriteLocation = 0;
+    free(buf);
+    commands = 0;
   }
+  // Reset packet
+  serialWriteString = "";
 
-
-
-  
 }
