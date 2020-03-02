@@ -149,7 +149,7 @@ void loop() {
     leftStickZero = true;
   }
   else {
-    leftStickSpeed = map(leftStickVal, 0, 1023, 0, 255);
+    leftStickSpeed = map(leftStickVal, 0, 1023, -128, 127);
     leftStickZero = false;
   }
 
@@ -159,7 +159,7 @@ void loop() {
     rightStickZero = true;
   }
   else {
-    rightStickSpeed = map(rightStickVal, 0, 1023, 255, 0);
+    rightStickSpeed = map(rightStickVal, 0, 1023, 127, -128);
     rightStickZero = false;
   }
   
@@ -169,7 +169,7 @@ void loop() {
     wipeZero = true;
   }
   else {
-    wipeVal = map(rightWipeHorizontal, 0, 1023, 0, 255);
+    wipeVal = map(rightWipeHorizontal, 0, 1023, -128, 127);
     wipeZero = false;
   }
 

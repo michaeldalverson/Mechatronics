@@ -3,7 +3,7 @@
 #include <QTRSensors.h>
 
 // DEBUGGING OPTIONS
-//#define debug // Uncomment to add debug mode (more verbosity)
+#define debug // Uncomment to add debug mode (more verbosity)
 //#define sensor // Uncomment to print all sensor values
 #define serial // Uncomment to view serial debugging
 
@@ -147,156 +147,7 @@ void setup() {
 
 void loop() { 
 
-while (true) {
-  ParseSerialComms();
-}
-
-// Read the serial port if there is something in it
-while(Serial3.available()>1){
-
-  // Read char
-  char buttonPressed = Serial3.read();
-
-  #ifdef serial
-    Serial.print("buttonPressed: ");
-    Serial.println(buttonPressed);
-  #endif
-
-  // MIDDLE BUTTONS
-  if (buttonPressed == 'E'){
-    #ifdef debug
-      Serial.println("Entrance Received");
-    #endif
-    teleoperatedFlag = false;
-    stopFlag = false;
-    entranceFlag = true;
-    autonomousFlag = false;
-
-    // Turn off all brakes
-    MS1.setM1Brake(0);
-    MS1.setM2Brake(0);
-    MS2.setM1Brake(0);
-    MS2.setM2Brake(0);
-  }
-  if (buttonPressed == 'S'){
-    #ifdef debug
-      Serial.println("Stop Received");
-    #endif
-    teleoperatedFlag = false;
-    stopFlag = true;
-    entranceFlag = false;
-    autonomousFlag = false;
-
-    // Turn motors off 
-    MS1.setM1Speed(0);
-    MS1.setM2Speed(0);
-    MS2.setM1Speed(0);
-    MS2.setM2Speed(0);
-
-    // Turn on all brakes
-    MS1.setM1Brake(400);
-    MS1.setM2Brake(400);
-    MS2.setM1Brake(400);
-    MS2.setM2Brake(400);
-  }
-  if (buttonPressed == 'A'){
-    #ifdef debug
-      Serial.println("Autonomous Received");
-    #endif
-    teleoperatedFlag = false;
-    stopFlag = false;
-    entranceFlag = false;
-    autonomousFlag = true;
-
-    // Turn off all brakes
-    MS1.setM1Brake(0);
-    MS1.setM2Brake(0);
-    MS2.setM1Brake(0);
-    MS2.setM2Brake(0);
-  }
-  if (buttonPressed == 'T'){
-    #ifdef debug
-      Serial.println("Teleoperated Received");
-    #endif
-    teleoperatedFlag = true;
-    stopFlag = false;
-    entranceFlag = false;
-    autonomousFlag = false;
-
-    // Turn motors off when teleop is pressed
-    MS1.setM1Speed(0);
-    MS1.setM2Speed(0);
-    MS2.setM1Speed(0);
-    MS2.setM2Speed(0);
-
-    // Turn off all brakes
-    MS1.setM1Brake(0);
-    MS1.setM2Brake(0);
-    MS2.setM1Brake(0);
-    MS2.setM2Brake(0);
-  }
-
-  // Control Values
-  if (teleoperatedFlag) {
-    if (buttonPressed == 'L'){
-      tempLeftStickSpeed = Serial3.read();
-      leftStickSpeed = map(tempLeftStickSpeed,-127,127,400,-400);
-      #ifdef debug
-        Serial.print("L: ");
-        Serial.println(leftStickSpeed);
-      #endif
-      MS1.setM1Speed(leftStickSpeed);
-    }
-  
-    if (buttonPressed == 'R'){
-      tempRightStickSpeed = Serial3.read();
-      rightStickSpeed = map(tempRightStickSpeed,-127,127,-400,400);
-      #ifdef debug
-        Serial.print("R: ");
-        Serial.println(rightStickSpeed);
-      #endif
-      MS1.setM2Speed(rightStickSpeed);
-    }
-    
-    if(buttonPressed == 'U'){
-      #ifdef debug
-        Serial.println("Fork Up");
-      #endif
-      MS2.setM1Brake(0);
-      MS2.setM1Speed(400);
-    }
-  
-    if (buttonPressed == 'D'){
-      #ifdef debug
-        Serial.println("Fork Down");
-      #endif
-      MS2.setM1Brake(0);
-      MS2.setM1Speed(-400);
-    }
-  
-    if (buttonPressed == 'F'){
-      #ifdef debug
-        Serial.println("Fork Locked");
-      #endif
-      MS2.setM1Speed(0);
-      MS2.setM1Brake(400);
-    }
-  
-    if (buttonPressed == 'W'){
-      tempWiperSpeed = Serial3.read();
-      wiperSpeed = map(tempWiperSpeed,-127,127,-400,400);
-      #ifdef debug
-        Serial.print("W: ");
-        Serial.println(wiperSpeed);
-      #endif
-      MS2.setM2Speed(wiperSpeed);
-    }
-  }
-  else {
-    Serial3.read();
-  }
-  
-}
+ParseSerialComms();
 
 if (autonomousFlag) {
   LineFollowing();
@@ -306,7 +157,7 @@ else if (entranceFlag){
   //WallFollowing();
 }
 else if (stopFlag) {
-  // Do nothing
+  StopCommand();
 }
 
 
