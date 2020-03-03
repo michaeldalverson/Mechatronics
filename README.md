@@ -27,6 +27,7 @@ If there is a conflict (potentially) This will also remove all local changes!!
 
 
 **Commiting code:**
+
 Stage files for commiting
 
 `git add .`
