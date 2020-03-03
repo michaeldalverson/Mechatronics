@@ -7,6 +7,9 @@
 //#define sensor // Uncomment to print all sensor values
 //#define serial // Uncomment to view serial debugging
 
+// Serial Communications
+char serialVal;
+
 // Motorshield Initializations
 unsigned char INA1 = 40;
 unsigned char INB1  = 42;
@@ -33,6 +36,11 @@ unsigned char leftWheelBout = A12;
 
 // Hall-Effect Sensor Initializations
 unsigned char hallSensorIn = A9;
+uint16_t hallSensorVal = 512;
+const uint8_t hallEffectActivation = 176;
+const uint16_t hallSensorMax = 1023-hallEffectActivation;
+const uint16_t hallSensorMin = hallEffectActivation;
+const double hallSensorAlpha = 0.6;
 
 // Range Finder Initializations
 unsigned char rangeFinderIn = A8;
@@ -40,10 +48,9 @@ uint8_t optimalDistance = 15;
 uint8_t optimalDistanceRange = 5;
 uint16_t minRangeVal = int(13*pow(optimalDistance+optimalDistanceRange, -.92)/5 * 1023);
 uint16_t maxRangeVal = int(13*pow(optimalDistance-optimalDistanceRange, -.92)/5 * 1023);
-
-//Rangefinder filtering
-double rangeFinderAlpha = 0.2;
+const double rangeFinderAlpha = 0.6;
 uint16_t distanceValue = 0;
+uint8_t rangeThreshold = 35;
 
 //IR Reflectance Sensor Initializations
 QTRSensors qtr;
@@ -51,7 +58,7 @@ QTRSensors qtr;
 const int8_t reflectSensorCount = 8;
 int16_t reflectSensorValues[reflectSensorCount];
 uint16_t biasArray[reflectSensorCount];
-float lineFollowingSpeedMultiplier = .55;
+const float lineFollowingSpeedMultiplier = .55;
 
 const int reflectSensorIn1 = 23;
 const int reflectSensorIn2 = 25;
@@ -76,9 +83,12 @@ int8_t tempRightStickSpeed = 0;
 int leftStickSpeed = 0;
 int8_t tempLeftStickSpeed = 0;
 bool leftStickDirection;
-int forkLiftDirection = 0;
+char forkLiftVal = 'Z';
 int wiperSpeed = 0;
 int8_t tempWiperSpeed = 0;
+
+// Entrance ceremony
+uint8_t entranceStep = 0;
 
 // Controller Mode
 bool teleoperatedFlag = false;
@@ -136,175 +146,45 @@ void setup() {
   pinMode(stopSwitchLeftSwiperIn,INPUT);
   pinMode(stopSwitchTopForkIn,INPUT);
   pinMode(stopSwitchBottomForkIn,INPUT);
-  
 }
 
 void loop() { 
 
-// Read the serial port if there is something in it
-while(Serial3.available()>1){
+// Read controller inputs
+ParseSerialComms();
 
-  #ifdef serial
-    Serial.print("Buffer: ");
-    Serial.println(Serial3.available());
-  #endif
-  // Read char
-  char buttonPressed = Serial3.read();
-
-  // MIDDLE BUTTONS
-  if (buttonPressed == 'E'){
-    #ifdef debug
-      Serial.println("Entrance Received");
-    #endif
-    teleoperatedFlag = false;
-    stopFlag = false;
-    entranceFlag = true;
-    autonomousFlag = false;
-
-    // Turn off all brakes
-    MS1.setM1Brake(0);
-    MS1.setM2Brake(0);
-    MS2.setM1Brake(0);
-    MS2.setM2Brake(0);
-    
-   // delay(20);
-  }
-  if (buttonPressed == 'S'){
-    #ifdef debug
-      Serial.println("Stop Received");
-    #endif
-    teleoperatedFlag = false;
-    stopFlag = true;
-    entranceFlag = false;
-    autonomousFlag = false;
-
-    // Turn motors off 
-    MS1.setM1Speed(0);
-    MS1.setM2Speed(0);
-    MS2.setM1Speed(0);
-    MS2.setM2Speed(0);
-
-    // Turn on all brakes
-    MS1.setM1Brake(400);
-    MS1.setM2Brake(400);
-    MS2.setM1Brake(400);
-    MS2.setM2Brake(400);
-    
-   // delay(20);
-  }
-  if (buttonPressed == 'A'){
-    #ifdef debug
-      Serial.println("Autonomous Received");
-    #endif
-    teleoperatedFlag = false;
-    stopFlag = false;
-    entranceFlag = false;
-    autonomousFlag = true;
-
-    // Turn off all brakes
-    MS1.setM1Brake(0);
-    MS1.setM2Brake(0);
-    MS2.setM1Brake(0);
-    MS2.setM2Brake(0);
-    
-   // delay(20);
-  }
-  if (buttonPressed == 'T'){
-    #ifdef debug
-      Serial.println("Teleoperated Received");
-    #endif
-    teleoperatedFlag = true;
-    stopFlag = false;
-    entranceFlag = false;
-    autonomousFlag = false;
-
-    // Turn motors off when teleop is pressed
-    MS1.setM1Speed(0);
-    MS1.setM2Speed(0);
-    MS2.setM1Speed(0);
-    MS2.setM2Speed(0);
-
-    // Turn off all brakes
-    MS1.setM1Brake(0);
-    MS1.setM2Brake(0);
-    MS2.setM1Brake(0);
-    MS2.setM2Brake(0);
-    
-   // delay(20);
-  }
-
-  // Control Values
-  if (teleoperatedFlag) {
-    if (buttonPressed == 'L'){
-      tempLeftStickSpeed = Serial3.read();
-      leftStickSpeed = map(tempLeftStickSpeed,-127,127,400,-400);
-      #ifdef debug
-        Serial.print("L: ");
-        Serial.println(leftStickSpeed);
-      #endif
-      MS1.setM1Speed(leftStickSpeed);
-    }
-  
-    if (buttonPressed == 'R'){
-      tempRightStickSpeed = Serial3.read();
-      rightStickSpeed = map(tempRightStickSpeed,-127,127,-400,400);
-      #ifdef debug
-        Serial.print("R: ");
-        Serial.println(rightStickSpeed);
-      #endif
-      MS1.setM2Speed(rightStickSpeed);
-    }
-    
-    if(buttonPressed == 'U'){
-      #ifdef debug
-        Serial.println("Fork Up");
-      #endif
-      MS2.setM1Brake(0);
-      MS2.setM1Speed(400);
-    }
-  
-    if (buttonPressed == 'D'){
-      #ifdef debug
-        Serial.println("Fork Down");
-      #endif
-      MS2.setM1Brake(0);
-      MS2.setM1Speed(-400);
-    }
-  
-    if (buttonPressed == 'F'){
-      #ifdef debug
-        Serial.println("Fork Locked");
-      #endif
-      MS2.setM1Speed(0);
-      MS2.setM1Brake(400);
-    }
-  
-    if (buttonPressed == 'W'){
-      tempWiperSpeed = Serial3.read();
-      wiperSpeed = map(tempWiperSpeed,-127,127,-400,400);
-      #ifdef debug
-        Serial.print("W: ");
-        Serial.println(wiperSpeed);
-      #endif
-      MS2.setM2Speed(wiperSpeed);
-    }
-  }
-  else {
-    Serial3.read();
-  }
-  
+if (teleoperatedFlag){
+  Teleoperation();
 }
-
-if (autonomousFlag) {
-  autonomousWrestlingPM7();
+else if (autonomousFlag) {
+  LineFollowing();
 }
 else if (entranceFlag){
-  HallEffectPM8();
-  //WallFollowing();
+  if (entranceStep == 0){
+    if (HallEffect()){
+      #ifdef debug
+        Serial.println("Moving to step 1!");
+      #endif
+      entranceStep++;
+    }
+  }
+  else if (entranceStep == 1){
+    if (!WallFollowing()){
+      #ifdef debug
+        Serial.println("Moving to step 2!");
+      #endif
+      entranceStep++;
+    }
+  }
+  else if (entranceStep == 2){
+    StopCommand();
+    entranceStep = 0;
+  }
 }
 else if (stopFlag) {
-  // Unimplemented
+  // Do Nothing in here
 }
 
 
 }
+

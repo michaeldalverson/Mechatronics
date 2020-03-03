@@ -1,7 +1,12 @@
 #include <SoftwareSerial.h>
-//Serial Communication
 
+//#define inputs // Uncomment to print all input values from controller components
+#define outputs // Uncomment to print all sent serial values
+
+//Serial Communication
 SoftwareSerial controllerSerial(2,3);
+String serialWriteString = "";
+uint8_t commands = 0;
 
 //Analog Pins
 //Wheel control sticks
@@ -35,7 +40,6 @@ bool entranceCeremony;
 bool autonomousWrestling;
 bool teleWrestling;
 bool STOP;
-char currButton;
 
 // Stick Hysteresis
 uint8_t stickHysteresis = 50; // Sends 0 stick values if -x+512 < stickVal < x+512
@@ -46,13 +50,19 @@ uint16_t maxStickActivation = 512 + stickHysteresis;
 uint16_t leftStickVal;
 int8_t leftStickSpeed;
 bool leftStickZero = true;
-int zeroCountLeft = 0;
+int zeroCountLeft = 4;
 
 //Right Wheel
 uint16_t rightStickVal;
 int8_t rightStickSpeed;
 bool rightStickZero = true;
-int zeroCountRight = 0;
+int zeroCountRight = 4;
+
+//Wiper 
+uint16_t rightWipeHorizontal;
+int8_t wipeVal;
+bool wipeZero = true;
+int zeroCountWipe = 4;
 
 //Forklift
 bool forkUp;
@@ -60,91 +70,49 @@ bool forkDown;
 char forkState;
 bool forkZero = true;
 
-//Wiper 
-uint16_t rightWipeHorizontal;
-int8_t wipeVal;
-bool wipeZero = true;
-int zeroCountWipe = 0;
 void setup() {
-  // put your setup code here, to run once:
-  //Controller sticks
+  
+  // Controller sticks
   pinMode(leftStickVertIn, INPUT);
   pinMode(rightStickVertIn, INPUT);
 
-  //Master control LEDS
+  // Master control LEDS
   pinMode(stopAllLEDOut, OUTPUT);
   pinMode(ceremonyLEDOut, OUTPUT);
   pinMode(teleLEDOut, OUTPUT);
   pinMode(autoLEDOut, OUTPUT);
 
-  //Master control buttons
+  // Master control buttons
   pinMode(stopAllIn, INPUT);
   pinMode(ceremonyIn, INPUT);
   pinMode(teleIn, INPUT);
   pinMode(autoIn, INPUT);
 
-  //Forklift control
+  // Forklift control
   pinMode(forkLiftRightUpIn, INPUT);
   pinMode(forkLiftLeftDownIn, INPUT);
 
+  // Wiper
   pinMode(tempWiperControl,INPUT);
-  //Serial
-  currButton = 'Z';
+  
+  // Serial
   controllerSerial.begin(9600);
   Serial.begin(9600);
 }
 
 void loop() {
-  // READ VALUES
- 
-
-  // Read Left Stick
+  
+  delay(75);
+  
+  // ***************************** READ INPUTS ******************************
+  // Read Sticks
   leftStickVal = analogRead(leftStickVertIn);
-  if ((leftStickVal > minStickActivation) && (leftStickVal < maxStickActivation)) {
-    leftStickSpeed = 0;
-    leftStickZero = true;
-  }
-  else {
-    leftStickSpeed = map(leftStickVal, 0, 1023, -127,127);
-    leftStickZero = false;
-  }
-
-
-  //Read Right Stick
   rightStickVal = analogRead(rightStickVertIn);
-  if ((rightStickVal > minStickActivation) && (rightStickVal < maxStickActivation)) {
-    rightStickSpeed = 0;
-    rightStickZero = true;
-  }
-  else {
-    rightStickSpeed = map(rightStickVal, 0, 1023, 127,-127);
-    rightStickZero = false;
-  }
-
+  rightWipeHorizontal = analogRead(tempWiperControl);
 
   // Read Forklift Vals
   forkUp = digitalRead(forkLiftRightUpIn);
   forkDown = digitalRead(forkLiftLeftDownIn);
-
-  if ((forkUp) && (!forkDown)) {
-    Serial.println("Fork Up");
-    forkZero = false;
-    forkState = 'U';
-  }
-  else if ((forkDown) && (!forkUp)) {
-    Serial.println("Fork Down");
-    forkState = 'D';
-    forkZero = false;
-  }
-  else if (!forkZero){
-    Serial.println("Fork Locked");
-    forkState = 'F';
-    forkZero = true;
-  }
-  else {
-    forkState = 'Z';
-  }
-
 
   // Read input buttons
   entranceCeremony = digitalRead(ceremonyIn);
@@ -152,129 +120,193 @@ void loop() {
   autonomousWrestling = digitalRead(autoIn);
   STOP = digitalRead(stopAllIn);
 
- // ***************************** SERIAL WRITES ******************************
- // Write Left Stick
-  if (!leftStickZero) {
-    // Print left stick values if they are not zero
-    Serial.print("L: ");
-    Serial.println(leftStickSpeed);
-    controllerSerial.write('L');
-    delay(5);
-    controllerSerial.write(leftStickSpeed);
-    delay(5);
-    zeroCountLeft = 0;
-  }
-  else if (zeroCountLeft <4){
-    controllerSerial.write('L');
-    delay(5);
+  #ifdef inputs
+    delay(1000);
+    Serial.println("L  \tR  \tW  \tU\tD\tE\tT\tA\tS");
+    Serial.print(leftStickVal);
+    Serial.print("\t");
+    Serial.print(rightStickVal);
+    Serial.print("\t");
+    Serial.print(rightWipeHorizontal);
+    Serial.print("\t");
+    Serial.print(forkUp);
+    Serial.print("\t");
+    Serial.print(forkDown);
+    Serial.print("\t");
+    Serial.print(entranceCeremony);
+    Serial.print("\t");
+    Serial.print(teleWrestling);
+    Serial.print("\t");
+    Serial.print(autonomousWrestling);
+    Serial.print("\t");
+    Serial.println(STOP);
+  #endif
+
+  // ***************************** PARSE INPUTS ******************************
+  // Left stick
+  if ((leftStickVal > minStickActivation) && (leftStickVal < maxStickActivation)) {
     leftStickSpeed = 0;
-    controllerSerial.write(leftStickSpeed);
-    delay(5);
-    zeroCountLeft +=1;
+    leftStickZero = true;
+  }
+  else {
+    leftStickSpeed = map(leftStickVal, 0, 1023, -127, 127);
+    leftStickZero = false;
   }
 
-  // Write Right Stick
-  if (!rightStickZero) {
-    // Print right stick values if they are not zero
-    Serial.print("R: ");
-    Serial.println(rightStickSpeed);
-    controllerSerial.write('R');
-    delay(5);
-    controllerSerial.write(rightStickSpeed);    
-    delay(5); 
-    zeroCountRight = 0;
-  }
-   else if (zeroCountRight < 4){
-    controllerSerial.write('R');
-    delay(5);
+  //Right Stick 
+  if ((rightStickVal > minStickActivation) && (rightStickVal < maxStickActivation)) {
     rightStickSpeed = 0;
-    controllerSerial.write(rightStickSpeed);
-    delay(5);
-    zeroCountRight+=1;
+    rightStickZero = true;
   }
-
-  // Write Fork State
-  if (forkState != 'Z'){
-    controllerSerial.write(forkState);
-    delay(5);
+  else {
+    rightStickSpeed = map(rightStickVal, 0, 1023, 127, -127);
+    rightStickZero = false;
   }
-
-  // MAIN BUTTONS & LED CONTROL
-  if (entranceCeremony){
-    controllerSerial.write('S');
-     for (int i = 0; i<3; i++){
-    controllerSerial.write('E');
-    }
-    delay(35);
-    digitalWrite(ceremonyLEDOut,HIGH);
-    digitalWrite(stopAllLEDOut,LOW);
-    digitalWrite(teleLEDOut,LOW);
-    digitalWrite(autoLEDOut,LOW);
-    currButton = 'E';
-  }
-  if (teleWrestling){
-    controllerSerial.write('S');
-     for (int i = 0; i<3; i++){
-    controllerSerial.write('T');
-    }
-    delay(35);
-    digitalWrite(ceremonyLEDOut,LOW);
-    digitalWrite(stopAllLEDOut,LOW);
-    digitalWrite(teleLEDOut,HIGH);
-    digitalWrite(autoLEDOut,LOW);
-    currButton = 'T';
-  }
-   if (autonomousWrestling){
-    controllerSerial.write('S');
-    for (int i = 0; i<3; i++){
-    controllerSerial.write('A');
-    }
-    delay(35);
-    digitalWrite(ceremonyLEDOut,LOW);
-    digitalWrite(stopAllLEDOut,LOW);
-    digitalWrite(teleLEDOut,LOW);
-    digitalWrite(autoLEDOut,HIGH);
-    currButton = 'A';
-  }
-   if (STOP){
-     for (int i = 0; i<3; i++){
-    controllerSerial.write('S');
-    }
-    delay(35);
-   
-    digitalWrite(ceremonyLEDOut,LOW);
-    digitalWrite(stopAllLEDOut,HIGH);
-    digitalWrite(teleLEDOut,LOW);
-    digitalWrite(autoLEDOut,LOW);
-    currButton = 'S';
-  }
-  ////Temporary wiper code
-  rightWipeHorizontal = analogRead(tempWiperControl);
+  
+  //Temporary wiper code
   if ((rightWipeHorizontal > minStickActivation) && (rightWipeHorizontal < maxStickActivation)) {
     wipeVal = 0;
     wipeZero = true;
   }
   else {
-    wipeVal = map(rightWipeHorizontal, 0, 1023, -127,127);
+    wipeVal = map(rightWipeHorizontal, 0, 1023, -127, 127);
     wipeZero = false;
   }
-   if (!wipeZero) {
-    // Print right stick values if they are not zero
-    Serial.print("W: ");
-    Serial.println(wipeVal);
-    controllerSerial.write('W');
-    delay(5);
-    controllerSerial.write(wipeVal);    
-    delay(5); 
+
+  // Forklift
+  if ((forkUp) && (!forkDown)) {
+    forkZero = false;
+    forkState = 'U';
+  }
+  else if ((forkDown) && (!forkUp)) {
+    forkState = 'D';
+    forkZero = false;
+  }
+  else if (!forkZero){
+    forkState = 'F';
+    forkZero = true;
+  }
+  else {
+    forkState = 'Z';
+  }
+
+  // ***************************** BUILD PACKETS ******************************
+  // Begin with start of packet
+  serialWriteString += char(2);
+ 
+  // Write Left Stick if they are not zero
+  if (!leftStickZero) {
+    zeroCountLeft = 0;
+    serialWriteString += 'L';
+    serialWriteString += char(leftStickSpeed);
+    commands++;
+  }
+  else if (zeroCountLeft <4){
+    leftStickSpeed = 0;
+    serialWriteString += 'L';
+    serialWriteString += char(1);
+    commands++;
+    zeroCountLeft++;
+  }
+
+  // Write Right Stick if they are not zero
+  if (!rightStickZero) {
+    serialWriteString += 'R';
+    serialWriteString += char(rightStickSpeed);
+    commands++;
+    zeroCountRight = 0;
+  }
+  else if (zeroCountRight < 4){
+    rightStickSpeed = 0;
+    serialWriteString += 'R';
+    serialWriteString += char(1);
+    commands++;
+    zeroCountRight++;
+  }
+
+  // Temp Wiper write
+  if (!wipeZero) {
+    serialWriteString += 'W';
+    serialWriteString += char(wipeVal);
+    commands++;
     zeroCountWipe = 0;
   }
-   else if (zeroCountWipe < 4){
-    controllerSerial.write('W');
-    delay(5);
+  else if (zeroCountWipe < 4){
     wipeVal = 0;
-    controllerSerial.write(wipeVal);
-    delay(5);
-    zeroCountWipe+=1;
+    serialWriteString += 'W';
+    serialWriteString += char(1);
+    commands++;
+    zeroCountWipe++;
   }
- controllerSerial.write("Q");
+
+  // WRITE MID VALUE
+  serialWriteString += char(3);
+
+  // Write Fork State
+  if (forkState != 'Z'){
+    serialWriteString += forkState;
+    commands++;
+  }
+
+  // MAIN BUTTONS & LED CONTROL
+  if (entranceCeremony){
+    serialWriteString += 'E';
+    commands++;
+    digitalWrite(ceremonyLEDOut,HIGH);
+    digitalWrite(stopAllLEDOut,LOW);
+    digitalWrite(teleLEDOut,LOW);
+    digitalWrite(autoLEDOut,LOW);
+  }
+  if (teleWrestling){
+    serialWriteString += 'T';
+    commands++;
+    digitalWrite(ceremonyLEDOut,LOW);
+    digitalWrite(stopAllLEDOut,LOW);
+    digitalWrite(teleLEDOut,HIGH);
+    digitalWrite(autoLEDOut,LOW);
+  }
+   if (autonomousWrestling){
+    serialWriteString += 'A';
+    commands++;
+    digitalWrite(ceremonyLEDOut,LOW);
+    digitalWrite(stopAllLEDOut,LOW);
+    digitalWrite(teleLEDOut,LOW);
+    digitalWrite(autoLEDOut,HIGH);
+  }
+   if (STOP){
+    serialWriteString += 'S';
+    commands++;
+    digitalWrite(ceremonyLEDOut,LOW);
+    digitalWrite(stopAllLEDOut,HIGH);
+    digitalWrite(teleLEDOut,LOW);
+    digitalWrite(autoLEDOut,LOW);
+  }
+
+  // ***************************** SERIAL WRITES ******************************
+  if (commands > 0){
+    // *** WARNING *** SENDING 0 USING CHARS DOES NOT WORK BECAUSE IT TERMINATES THE PACKET STRING
+    serialWriteString += char(4);
+
+    // Convert string into char array using this magic
+    char* buf = (char*) malloc(sizeof(char)*serialWriteString.length()+1);
+    serialWriteString.toCharArray(buf, serialWriteString.length()+1);
+  
+    // Send char array packet to mega
+    controllerSerial.write(buf);
+    
+    #ifdef outputs
+      Serial.print("L: ");
+      Serial.print(serialWriteString.length());
+      Serial.print(" Packet: ");
+      Serial.print(buf);
+      Serial.println();
+    #endif
+
+    // Deallocated the buffer char array and reset counter
+    free(buf);
+    commands = 0;
+  }
+  // Reset packet string
+  serialWriteString = "";
+
 }

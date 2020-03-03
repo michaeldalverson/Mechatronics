@@ -1,6 +1,4 @@
-void autonomousWrestlingPM7(){
-
-  delay(100);
+void LineFollowing(){
 
   // Read qtr values
   qtr.read(reflectSensorValues);
@@ -87,3 +85,4 @@ void autonomousWrestlingPM7(){
   
   return;
 }
+
