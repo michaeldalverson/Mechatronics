@@ -8,8 +8,6 @@
 //#define serial // Uncomment to view serial debugging
 
 // Serial Communications
-const uint8_t serialBufferSize = 16;
-char serialBufferArray[serialBufferSize] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 char serialVal;
 
 // Motorshield Initializations
@@ -180,7 +178,7 @@ else if (entranceFlag){
   }
   else if (entranceStep == 2){
     StopCommand();
-    entranceStep++;
+    entranceStep = 0;
   }
 }
 else if (stopFlag) {

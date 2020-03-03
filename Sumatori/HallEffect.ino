@@ -1,6 +1,5 @@
 bool HallEffect(){
   
-  while (true){
     // Read vals with IIR
     hallSensorVal = int(((1-hallSensorAlpha)*hallSensorVal) + (hallSensorAlpha*analogRead(hallSensorIn)));
     
@@ -20,7 +19,6 @@ bool HallEffect(){
     // Else return false and continue checking
     else{
       return false;
-    }
   }
 }
 
