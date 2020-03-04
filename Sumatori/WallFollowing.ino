@@ -19,10 +19,10 @@ bool WallFollowing(){
     #ifdef debug
       Serial.println("Move Straight");
     #endif
-    MS1.setM1Speed(300);
-    MS1.setM2Speed(300);
     MS1.setM2Brake(0);
     MS1.setM1Brake(0);
+    MS1.setM1Speed(-300);
+    MS1.setM2Speed(300);
   }
   // If wall is too far, move right
   else if (distanceValue < minRangeVal){
@@ -41,9 +41,8 @@ bool WallFollowing(){
     #endif
     MS1.setM2Brake(0);
     MS1.setM1Brake(0);
-    MS1.setM1Speed(250);
-    MS1.setM2Speed(-150);
+    MS1.setM1Speed(-150);
+    MS1.setM2Speed(250);
   }
   return true;
 }
-
