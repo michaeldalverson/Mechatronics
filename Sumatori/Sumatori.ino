@@ -5,7 +5,7 @@
 
 // DEBUGGING OPTIONS
 #define debug // Uncomment to add debug mode (more verbosity)
-//#define sensor // Uncomment to print all sensor values
+#define sensor // Uncomment to print all sensor values
 //#define serial // Uncomment to view serial debugging
 
 // Serial Communications
@@ -64,7 +64,7 @@ float wheelTurnProportion = turnRadius / (turnRadius + wheelSpacing);
 // Hall-Effect Sensor Initializations
 unsigned char hallSensorIn = A9;
 uint16_t hallSensorVal = 512;
-const uint8_t hallEffectActivation = 176;
+const uint16_t hallEffectActivation = 295;
 const uint16_t hallSensorMax = 1023-hallEffectActivation;
 const uint16_t hallSensorMin = hallEffectActivation;
 const double hallSensorAlpha = 0.6;
@@ -211,4 +211,3 @@ void loop() {
 
 
 }
-
