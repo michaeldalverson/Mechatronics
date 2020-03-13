@@ -53,6 +53,14 @@ int endTimeLeft = 0;
 float gearRatio = 102.08; // Gearing and encoder consts
 int countsPerRev = 64;
 
+float straightLineDistance = 25.0; // cm PM10 PARAMETERS  
+float turnRadius = 8.0; // cm
+
+float wheelDiameter = 4.2; // cm
+float wheelSpacing = 10.5; // cm
+float straightLineRadians = straightLineDistance * 2 / (wheelDiameter); // 2*pi*dist/(pi*D)
+float wheelTurnProportion = turnRadius / (turnRadius + wheelSpacing);
+
 // Hall-Effect Sensor Initializations
 unsigned char hallSensorIn = A9;
 uint16_t hallSensorVal = 512;
