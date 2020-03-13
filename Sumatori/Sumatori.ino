@@ -1,6 +1,7 @@
 #include <SoftwareSerial.h>
 #include <DualVNH5019MotorShield.h>
 #include <QTRSensors.h>
+#include <Encoder.h>
 
 // DEBUGGING OPTIONS
 #define debug // Uncomment to add debug mode (more verbosity)
@@ -21,18 +22,36 @@ unsigned char INB2 = 43;
 unsigned char PWM2 = 45;
 unsigned char EN2DIAG2 = 39;
 unsigned char CS2 = A7;
+
 DualVNH5019MotorShield MS1;
 DualVNH5019MotorShield MS2(INA1,INB1,PWM1,EN1DIAG1,CS1,INA2,INB2,PWM2,EN2DIAG2,CS2);
 
-// Motor hall-effect sensor intializations
-unsigned char forkliftAout = A3;
-unsigned char forkliftBout = A2;
-unsigned char wiperAout = A5;
-unsigned char wiperBout = A4;
-unsigned char rightWheelAout = A11;
-unsigned char rightWheelBout = A10;
-unsigned char leftWheelAout = A13;
-unsigned char leftWheelBout = A12;
+// Motor encoder initializations
+unsigned char leftWheelAout = 18; // Interrupt pins
+unsigned char leftWheelBout = 19;
+unsigned char rightWheelAout = 20;
+unsigned char rightWheelBout = 21;
+
+Encoder lmEnc(leftWheelAout, leftWheelBout); // Encoder intialization
+Encoder rmEnc(rightWheelAout, rightWheelBout);
+
+int rightEncoderCount = 0; // Counts
+int leftEncoderCount = 0;
+
+float leftWheelPosition = 0; // Positions and velocities
+float leftWheelPositionOld = 0;
+float leftWheelVelocity = 0;
+float rightWheelPosition = 0;
+float rightWheelPositionOld = 0;
+float rightWheelVelocity = 0;
+
+int startTimeRight = 0; // Encoder times 
+int endTimeRight = 0;
+int startTimeLeft = 0;
+int endTimeLeft = 0;
+
+float gearRatio = 102.08; // Gearing and encoder consts
+int countsPerRev = 64;
 
 // Hall-Effect Sensor Initializations
 unsigned char hallSensorIn = A9;
@@ -71,10 +90,10 @@ const int reflectSensorIn8 = 37;
 const int reflectSensorLED = 22;
 
 // Stop Switch Initializations
-const int stopSwitchRightSwiperIn = 18;
-const int stopSwitchLeftSwiperIn = 19;
-const int stopSwitchTopForkIn = 20;
-const int stopSwitchBottomForkIn = 21;
+const int stopSwitchRightSwiperIn = 22;
+const int stopSwitchLeftSwiperIn = 24;
+const int stopSwitchTopForkIn = 26;
+const int stopSwitchBottomForkIn = 28;
 
 // Value variables
 int rightStickSpeed = 0;
@@ -105,7 +124,7 @@ void setup() {
   Serial3.begin(9600);
   Serial.begin(9600);
 
-  // Initialize Motor Shields
+  // Initialize Motor Shields (encoders have no inits in setup)
   MS1.init();
   MS2.init();
 
@@ -113,14 +132,7 @@ void setup() {
   pinMode(hallSensorIn,INPUT);
   
   // Range Finder Sensor Setup
-  pinMode(forkliftAout,INPUT);
-  pinMode(forkliftBout,INPUT);
-  pinMode(wiperAout,INPUT);
-  pinMode(wiperAout,INPUT);
-  pinMode(rightWheelAout,INPUT);
-  pinMode(rightWheelAout,INPUT);
-  pinMode(leftWheelAout,INPUT);
-  pinMode(leftWheelAout,INPUT);
+  pinMode(rangeFinderIn,INPUT);
 
   #ifdef debug
     Serial.print("Range Finder Optimal Vals: ");
@@ -150,40 +162,44 @@ void setup() {
 
 void loop() { 
 
-// Read controller inputs
-ParseSerialComms();
-
-if (teleoperatedFlag){
-  Teleoperation();
-}
-else if (autonomousFlag) {
-  LineFollowing();
-}
-else if (entranceFlag){
-  if (entranceStep == 0){
-    if (HallEffect()){
-      #ifdef debug
-        Serial.println("Moving to step 1!");
-      #endif
-      entranceStep++;
+  // Read encoder values
+  leftEncoderCount = lmEnc.read();
+  rightEncoderCount = rmEnc.read();
+  
+  // Read controller inputs
+  ParseSerialComms();
+  
+  if (teleoperatedFlag){
+    Teleoperation();
+  }
+  else if (autonomousFlag) {
+    LineFollowing();
+  }
+  else if (entranceFlag){
+    if (entranceStep == 0){
+      if (HallEffect()){
+        #ifdef debug
+          Serial.println("Moving to step 1!");
+        #endif
+        entranceStep++;
+      }
+    }
+    else if (entranceStep == 1){
+      if (!WallFollowing()){
+        #ifdef debug
+          Serial.println("Moving to step 2!");
+        #endif
+        entranceStep++;
+      }
+    }
+    else if (entranceStep == 2){
+      StopCommand();
+      entranceStep = 0;
     }
   }
-  else if (entranceStep == 1){
-    if (!WallFollowing()){
-      #ifdef debug
-        Serial.println("Moving to step 2!");
-      #endif
-      entranceStep++;
-    }
+  else if (stopFlag) {
+    // Do Nothing in here
   }
-  else if (entranceStep == 2){
-    StopCommand();
-    entranceStep = 0;
-  }
-}
-else if (stopFlag) {
-  // Do Nothing in here
-}
 
 
 }
