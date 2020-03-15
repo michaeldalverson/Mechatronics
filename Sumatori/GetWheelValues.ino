@@ -1,4 +1,7 @@
 void GetWheelValues(){
+  delay(5);
+
+  count++;
 
   // LEFT WHEEL CALCULATIONS
   startTimeLeft = millis();
@@ -8,12 +11,13 @@ void GetWheelValues(){
   leftWheelVelocity = 1000 * (leftWheelPosition - leftWheelPositionOld) / (startTimeLeft - endTimeLeft);
 
   #ifdef sensor // Print positions and velocities for debugging
-    delay(50);
-    Serial.print("Left: P = ");
-    Serial.print(leftWheelPosition);
-    Serial.print(" V = ");
-    Serial.print(leftWheelVelocity);
-    Serial.println(); 
+    if (count > 10){
+      Serial.print("Left : P = ");
+      Serial.print(leftWheelPosition);
+      Serial.print(" V = ");
+      Serial.print(leftWheelVelocity);
+      Serial.println(); 
+    }
   #endif
 
   // Store data for derivs
@@ -29,12 +33,14 @@ void GetWheelValues(){
   rightWheelVelocity = 1000 * (rightWheelPosition - rightWheelPositionOld) / (startTimeRight - endTimeRight);
 
   #ifdef sensor // Print positions and velocities for debugging
-    delay(50);
-    Serial.print("Right: P = ");
-    Serial.print(rightWheelPosition);
-    Serial.print(" V = ");
-    Serial.print(rightWheelVelocity);
-    Serial.println(); 
+    if (count > 10){
+      Serial.print("Right: P = ");
+      Serial.print(rightWheelPosition);
+      Serial.print(" V = ");
+      Serial.print(rightWheelVelocity);
+      Serial.println(); 
+      count = 0;
+    }
   #endif
 
   // Store data for derivs
@@ -42,4 +48,3 @@ void GetWheelValues(){
   endTimeRight = startTimeRight;
   
 }
-

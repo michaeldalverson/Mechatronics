@@ -35,8 +35,8 @@ unsigned char rightWheelBout = 21;
 Encoder lmEnc(leftWheelAout, leftWheelBout); // Encoder intialization
 Encoder rmEnc(rightWheelAout, rightWheelBout);
 
-int rightEncoderCount = 0; // Counts
-int leftEncoderCount = 0;
+long rightEncoderCount = 0; // Counts
+long leftEncoderCount = 0;
 
 float leftWheelPosition = 0; // Positions and velocities
 float leftWheelPositionOld = 0;
@@ -53,13 +53,18 @@ int endTimeLeft = 0;
 float gearRatio = 102.08; // Gearing and encoder consts
 int countsPerRev = 64;
 
-float straightLineDistance = 25.0; // cm PM10 PARAMETERS  
+float straightLineDistance = 32.0; // cm PM10 PARAMETERS  
 float turnRadius = 8.0; // cm
 
-float wheelDiameter = 4.2; // cm
-float wheelSpacing = 10.5; // cm
-float straightLineRadians = straightLineDistance * 2 / (wheelDiameter); // 2*pi*dist/(pi*D)
+float wheelDiameter = 10; // cm
+float wheelSpacing = 21; // cm
+float straightLineRadians = straightLineDistance * 2 / (wheelDiameter / 2.54); // 2*pi*dist/(pi*D)
 float wheelTurnProportion = turnRadius / (turnRadius + wheelSpacing);
+
+//TEMP VARIABLE FOR COUNTING FOR PRINT STUFF
+int count = 0;
+int leftStraightLineSpeed = 250;
+int rightStraightLineSpeed = 250;
 
 // Hall-Effect Sensor Initializations
 unsigned char hallSensorIn = A9;
@@ -178,10 +183,11 @@ void loop() {
   ParseSerialComms();
   
   if (teleoperatedFlag){
-    Teleoperation();
+    Teleoperation(); 
   }
   else if (autonomousFlag) {
-    LineFollowing();
+    // LineFollowing();
+    StraightLine();
   }
   else if (entranceFlag){
     if (entranceStep == 0){

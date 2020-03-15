@@ -8,6 +8,12 @@ void StopCommand(){
     autonomousFlag = false;
 
     entranceStep = 0;
+    lmEnc.write(0);
+    rmEnc.write(0);
+    leftWheelPosition = 0;
+    rightWheelPosition = 0;
+    leftWheelVelocity = 0;
+    rightWheelVelocity = 0;
 
     // Turn motors off 
     MS1.setM1Speed(0);
@@ -21,4 +27,3 @@ void StopCommand(){
     MS2.setM1Brake(400);
     MS2.setM2Brake(400);
 }
-
