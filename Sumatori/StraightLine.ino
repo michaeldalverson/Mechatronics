@@ -1,7 +1,6 @@
 void StraightLine(){
-  
+  GetWheelValues();
   if (rightWheelPosition < straightLineRadians*.85){
-    GetWheelValues();
     MS1.setM2Brake(0);
     MS1.setM1Brake(0);
     MS1.setM1Speed(-leftStraightLineSpeed);
@@ -11,7 +10,6 @@ void StraightLine(){
     }
   }
   else if (rightWheelPosition < straightLineRadians){
-    GetWheelValues();
     MS1.setM2Brake(0);
     MS1.setM1Brake(0);
     MS1.setM1Speed(-75);
