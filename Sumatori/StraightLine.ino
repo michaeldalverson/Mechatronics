@@ -29,8 +29,7 @@ void StraightLine() {
       modMotorVal = rightWheelSpeedStraight;
     }
     else {
-      modMotorVal =  modMotorVal * pow(leftWheelVelocity / rightWheelVelocity, 2);
-      Serial.println(modMotorVal);
+      modMotorVal =  modMotorVal * pow(leftWheelVelocity / rightWheelVelocity, 1);
       MS1.setM2Speed(constrain(modMotorVal, 0, 400));
     }
   }
@@ -38,8 +37,14 @@ void StraightLine() {
     MS1.setM2Speed(0);
     MS1.setM2Brake(100);
   }
-  if (rightWheelPosition >= straightLineRadians && leftWheelPosition >= straightLineRadians) {
-    // Stop robot once destination reached
+  if (rightWheelPosition >= straightLineRadians-1 && leftWheelPosition >= straightLineRadians-1) {
+    while(rightWheelPosition < straightLineRadians && leftWheelPosition < straightLineRadians){
+      Serial.end();
+      leftEncoderCount = lmEnc.read();
+      rightEncoderCount = rmEnc.read();
+      GetWheelValues();
+    }
+    Serial.begin(9600);
     StopCommand();
   }
   /*
