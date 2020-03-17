@@ -15,6 +15,11 @@ void StopCommand(){
   leftWheelVelocity = 0;
   rightWheelVelocity = 0;
 
+  leftStraightLineSpeed = 250;
+  rightStraightLineSpeed = 250;
+  leftTurnSpeed = 250;
+  rightTurnSpeed = 250*wheelTurnProportion;
+
   // Turn motors off 
   MS1.setM1Speed(0);
   MS1.setM2Speed(0);

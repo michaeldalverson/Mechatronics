@@ -53,15 +53,16 @@ int endTimeLeft = 0;
 float gearRatio = 102.08; // Gearing and encoder consts
 int countsPerRev = 64;
 
-float straightLineDistance = 32.0 * 2.54; // cm PM10 PARAMETERS  
-float turnRadius = 8.0; // cm
-float turnAngle = 90;
+float straightLineDistance = 18.0 * 2.54; // cm PM10 PARAMETERS  
+float turnRadius = 8; // cm
+float turnAngle = 360;
 
-float wheelDiameter = 10; // cm
-float wheelSpacing = 21; // cm
+float wheelDiameter = 9.9; // cm
+float wheelSpacing = 20.4; // cm
 float straightLineRadians = straightLineDistance * 2 / (wheelDiameter); // 2*pi*dist/(pi*D)
 float wheelTurnProportion = turnRadius / (turnRadius + wheelSpacing);
-float rightTurnRadians = 2 * M_PI * (turnRadius + wheelSpacing) * 360 / (turnAngle * wheelDiameter); // 2*pi*pi*(r+s)*360/(theta*pi*d)
+float rightTurnRadiansLeft = 4 * M_PI * (turnRadius + wheelSpacing) * 360 / (turnAngle * wheelDiameter); // 4*pi*pi*(r+s)*360/(theta*pi*d)
+float rightTurnRadiansRight = 4 * M_PI * (turnRadius) * 360 / (turnAngle * wheelDiameter); // 4*pi*pi*(r)*360/(theta*pi*d)
 
 //TEMP VARIABLE FOR COUNTING FOR PRINT STUFF
 int count = 0;
@@ -150,6 +151,13 @@ void setup() {
   
   // Range Finder Sensor Setup
   pinMode(rangeFinderIn,INPUT);
+
+  #ifdef debug
+    Serial.print("R Rotation Req: ");
+    Serial.print(rightTurnRadiansRight);
+    Serial.print(" L Rotation Req: ");
+    Serial.println(rightTurnRadiansLeft);
+  #endif
 
   #ifdef debug
     Serial.print("Range Finder Optimal Vals: ");
