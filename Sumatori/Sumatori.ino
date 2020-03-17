@@ -55,7 +55,7 @@ int endTimeLeft = 0;
 float gearRatio = 102.08; // Gearing and encoder consts
 int countsPerRev = 64;
 
-float straightLineDistance = 36.0 * 2.54; // cm ***************************** STRAIGHT LINE DISTANCE!!!!!!!!
+float straightLineDistance = 15.0 * 2.54; // cm ***************************** STRAIGHT LINE DISTANCE!!!!!!!!
 float turnRadius = 8; // cm ************************************************* TURNING RADIUS!!!!!!!!!!!
 float turnAngle = 360;
 
@@ -76,10 +76,13 @@ int rightTurnSpeed = 250 * wheelTurnProportion;
 
 double Kp=1.5, Ki=5, Kd=6;
 double encoderSpeedCap = 200;
-double leftWheelSpeedStraight = encoderSpeedCap, rightWheelSpeedStraight = encoderSpeedCap;
+double leftWheelSpeedStraight = encoderSpeedCap, rightWheelSpeedStraight = encoderSpeedCap, leftWheelSpeedTurn = encoderSpeedCap, rightWheelSpeedTurn = encoderSpeedCap*wheelTurnProportion;
 PID leftWheelPIDStraight(&leftWheelPosition, &leftWheelSpeedStraight, &straightLineRadians, Kp, Ki, Kd, DIRECT);
 PID rightWheelPIDStraight(&rightWheelPosition, &rightWheelSpeedStraight, &straightLineRadians, Kp, Ki, Kd, DIRECT);
+PID leftWheelPIDTurn(&leftWheelPosition, &leftWheelSpeedTurn, &rightTurnRadiansLeft, Kp, Ki, Kd, DIRECT);
+PID rightWheelPIDTurn(&rightWheelPosition, &rightWheelSpeedTurn, &rightTurnRadiansRight, Kp, Ki, Kd, DIRECT);
 double modMotorVal = encoderSpeedCap;
+double modMotorTurning = encoderSpeedCap;
 
 // Hall-Effect Sensor Initializations
 unsigned char hallSensorIn = A9;
@@ -199,11 +202,16 @@ void setup() {
   // Setup pid control
   leftWheelPIDStraight.SetMode(AUTOMATIC);
   rightWheelPIDStraight.SetMode(AUTOMATIC);
+  leftWheelPIDTurn.SetMode(AUTOMATIC);
+  rightWheelPIDTurn.SetMode(AUTOMATIC);
   leftWheelPIDStraight.SetSampleTime(50);
   rightWheelPIDStraight.SetSampleTime(50);
+  leftWheelPIDTurn.SetSampleTime(50);
+  rightWheelPIDTurn.SetSampleTime(50);
   leftWheelPIDStraight.SetOutputLimits(65, encoderSpeedCap);
   rightWheelPIDStraight.SetOutputLimits(65, encoderSpeedCap);
-  
+  leftWheelPIDTurn.SetOutputLimits(30, encoderSpeedCap);
+  rightWheelPIDTurn.SetOutputLimits(30, encoderSpeedCap);
 }
 
 void loop() {
