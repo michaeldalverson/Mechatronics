@@ -1,7 +1,7 @@
-void StopCommand(){
-  #ifdef debug
-    Serial.println("Stop Received");
-  #endif
+void StopCommand() {
+#ifdef debug
+  Serial.println("Stop Received");
+#endif
   teleoperatedFlag = false;
   stopFlag = true;
   entranceFlag = false;
@@ -18,9 +18,9 @@ void StopCommand(){
   leftStraightLineSpeed = 250;
   rightStraightLineSpeed = 250;
   leftTurnSpeed = 250;
-  rightTurnSpeed = 250*wheelTurnProportion;
+  rightTurnSpeed = 250 * wheelTurnProportion;
 
-  // Turn motors off 
+  // Turn motors off
   MS1.setM1Speed(0);
   MS1.setM2Speed(0);
   MS2.setM1Speed(0);

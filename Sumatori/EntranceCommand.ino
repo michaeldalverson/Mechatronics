@@ -1,7 +1,7 @@
-void EntranceCommand(){   
-  #ifdef debug
-    Serial.println("Entrance Received");
-  #endif
+void EntranceCommand() {
+#ifdef debug
+  Serial.println("Entrance Received");
+#endif
   teleoperatedFlag = false;
   stopFlag = false;
   entranceFlag = true;

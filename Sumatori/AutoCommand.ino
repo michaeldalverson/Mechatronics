@@ -1,7 +1,7 @@
-void AutoCommand(){   
-  #ifdef debug
-    Serial.println("Autonomous Received");
-  #endif
+void AutoCommand() {
+#ifdef debug
+  Serial.println("Autonomous Received");
+#endif
   teleoperatedFlag = false;
   stopFlag = false;
   entranceFlag = false;

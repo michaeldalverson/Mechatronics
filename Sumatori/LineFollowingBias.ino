@@ -1,5 +1,5 @@
 
-void LineFollowingBias(){
+void LineFollowingBias() {
 
   // Local inits
   int timeElapsed = 0;
@@ -9,12 +9,12 @@ void LineFollowingBias(){
   uint32_t sumSensorVals[reflectSensorCount];
 
   // Set sum values equal to 0 at start
-  for (int i = 0; i < reflectSensorCount; i++){
+  for (int i = 0; i < reflectSensorCount; i++) {
     sumSensorVals[i] = 0;
   }
 
   // Get the average biasing
-  while(timeElapsed < 2500){
+  while (timeElapsed < 2500) {
     // Get time elapsed
     timeElapsed = millis() - startTime;
 
@@ -25,7 +25,7 @@ void LineFollowingBias(){
     count++;
 
     // Add sensor readings to sum
-    for (int i = 0; i < reflectSensorCount; i++){
+    for (int i = 0; i < reflectSensorCount; i++) {
       sumSensorVals[i] += tempSensorVals[i];
     }
 
@@ -34,18 +34,18 @@ void LineFollowingBias(){
   }
 
   // Average Bias Values
-  for (int i = 0; i < reflectSensorCount; i++){
-    biasArray[i] = sumSensorVals[i]/count;
-    #ifdef debug
-      Serial.print(biasArray[i]);
-      Serial.print("\t");
-    #endif
+  for (int i = 0; i < reflectSensorCount; i++) {
+    biasArray[i] = sumSensorVals[i] / count;
+#ifdef debug
+    Serial.print(biasArray[i]);
+    Serial.print("\t");
+#endif
   }
 
-  #ifdef debug
-    Serial.println();
-  #endif
-  
+#ifdef debug
+  Serial.println();
+#endif
+
   return;
 }
 

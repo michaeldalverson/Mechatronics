@@ -1,7 +1,7 @@
-void TeleCommand(){
-  #ifdef debug
-    Serial.println("Teleoperated Received");
-  #endif
+void TeleCommand() {
+#ifdef debug
+  Serial.println("Teleoperated Received");
+#endif
   teleoperatedFlag = true;
   stopFlag = false;
   entranceFlag = false;

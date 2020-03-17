@@ -1,34 +1,34 @@
-bool WallFollowing(){
+bool WallFollowing() {
   delay(2);
 
   // Read range finder val
-  distanceValue = int(((1-rangeFinderAlpha)*distanceValue) + (rangeFinderAlpha*analogRead(rangeFinderIn)));
-  
+  distanceValue = int(((1 - rangeFinderAlpha) * distanceValue) + (rangeFinderAlpha * analogRead(rangeFinderIn)));
+
   // Debugging purposes
-  #ifdef sensor
-    Serial.print("Range Finder Value: ");
-    Serial.println(distanceValue);
-  #endif
+#ifdef sensor
+  Serial.print("Range Finder Value: ");
+  Serial.println(distanceValue);
+#endif
 
   // If distance is outside the threshold, return true to end wall following
-  if (distanceValue < rangeThreshold){
+  if (distanceValue < rangeThreshold) {
     return false;
   }
   // If wall is optimal distance, move straight
-  else if (distanceValue >= minRangeVal && distanceValue <= maxRangeVal){
-    #ifdef debug
-      Serial.println("Move Straight");
-    #endif
+  else if (distanceValue >= minRangeVal && distanceValue <= maxRangeVal) {
+#ifdef debug
+    Serial.println("Move Straight");
+#endif
     MS1.setM2Brake(0);
     MS1.setM1Brake(0);
     MS1.setM1Speed(-300);
     MS1.setM2Speed(300);
   }
   // If wall is too far, move right
-  else if (distanceValue < minRangeVal){
-    #ifdef debug
-      Serial.println("Move Right");
-    #endif
+  else if (distanceValue < minRangeVal) {
+#ifdef debug
+    Serial.println("Move Right");
+#endif
     MS1.setM2Brake(0);
     MS1.setM1Brake(0);
     MS1.setM1Speed(-250);
@@ -36,9 +36,9 @@ bool WallFollowing(){
   }
   // If wall is too close, move left
   else {
-    #ifdef debug
-      Serial.println("Move Left");
-    #endif
+#ifdef debug
+    Serial.println("Move Left");
+#endif
     MS1.setM2Brake(0);
     MS1.setM1Brake(0);
     MS1.setM1Speed(-150);
