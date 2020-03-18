@@ -76,10 +76,13 @@ int rightTurnSpeed = 250 * wheelTurnProportion;
 
 double Kp=1.5, Ki=8, Kd=3;
 double encoderSpeedCap = 200;
-double leftWheelSpeedStraight = encoderSpeedCap, rightWheelSpeedStraight = encoderSpeedCap;
+double leftWheelSpeedStraight = encoderSpeedCap, rightWheelSpeedStraight = encoderSpeedCap, leftWheelSpeedTurn = encoderSpeedCap, rightWheelSpeedTurn = encoderSpeedCap*wheelTurnProportion;
 PID leftWheelPIDStraight(&leftWheelPosition, &leftWheelSpeedStraight, &straightLineRadians, Kp, Ki, Kd, DIRECT);
 PID rightWheelPIDStraight(&rightWheelPosition, &rightWheelSpeedStraight, &straightLineRadians, Kp, Ki, Kd, DIRECT);
+PID leftWheelPIDTurn(&leftWheelPosition, &leftWheelSpeedTurn, &rightTurnRadiansLeft, Kp, Ki, Kd, DIRECT);
+PID rightWheelPIDTurn(&rightWheelPosition, &rightWheelSpeedTurn, &rightTurnRadiansRight, Kp, Ki, Kd, DIRECT);
 double modMotorVal = encoderSpeedCap;
+double modMotorTurning = encoderSpeedCap;
 
 // Hall-Effect Sensor Initializations
 unsigned char hallSensorIn = A9;
@@ -199,11 +202,16 @@ void setup() {
   // Setup pid control
   leftWheelPIDStraight.SetMode(AUTOMATIC);
   rightWheelPIDStraight.SetMode(AUTOMATIC);
+  leftWheelPIDTurn.SetMode(AUTOMATIC);
+  rightWheelPIDTurn.SetMode(AUTOMATIC);
+  leftWheelPIDTurn.SetSampleTime(200);
+  rightWheelPIDTurn.SetSampleTime(200);
   leftWheelPIDStraight.SetSampleTime(200);
   rightWheelPIDStraight.SetSampleTime(200);
   leftWheelPIDStraight.SetOutputLimits(65, encoderSpeedCap);
   rightWheelPIDStraight.SetOutputLimits(65, encoderSpeedCap);
-  
+  leftWheelPIDTurn.SetOutputLimits(30, encoderSpeedCap);
+  rightWheelPIDTurn.SetOutputLimits(30, encoderSpeedCap);
 }
 
 void loop() {
