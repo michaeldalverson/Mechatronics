@@ -13,7 +13,7 @@ void GetWheelValues() {
   // LEFT WHEEL CALCULATIONS
   startTimeLeft = millis();
 
-  if ((startTimeLeft - endTimeLeft) > 14) {
+  if ((startTimeLeft - endTimeLeft) > 25) {
 
     // Get pos and vel of gearbox
     leftWheelPosition = 2 * M_PI * leftEncoderCount / (gearRatio * countsPerRev);

@@ -6,7 +6,7 @@
 
 // DEBUGGING OPTIONS
 //#define debug // Uncomment to add debug mode (more verbosity)
-//#define sensor // Uncomment to print all sensor values
+#define sensor // Uncomment to print all sensor values
 //#define serial // Uncomment to view serial debugging
 #define MOTORSPEED
 
@@ -56,7 +56,7 @@ float gearRatio = 102.08; // Gearing and encoder consts
 int countsPerRev = 64;
 
 float straightLineDistance = 15.0 * 2.54; // cm ***************************** STRAIGHT LINE DISTANCE!!!!!!!!
-float turnRadius = 8; // cm ************************************************* TURNING RADIUS!!!!!!!!!!!
+float turnRadius = 25; // cm ************************************************* TURNING RADIUS!!!!!!!!!!!
 float turnAngle = 360;
 
 double wheelDiameter = 10.225; // cm
