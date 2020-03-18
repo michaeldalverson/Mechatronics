@@ -6,7 +6,7 @@
 
 // DEBUGGING OPTIONS
 //#define debug // Uncomment to add debug mode (more verbosity)
-#define sensor // Uncomment to print all sensor values
+//#define sensor // Uncomment to print all sensor values
 //#define serial // Uncomment to view serial debugging
 #define MOTORSPEED
 
@@ -59,7 +59,7 @@ float straightLineDistance = 15.0 * 2.54; // cm ***************************** ST
 float turnRadius = 8; // cm ************************************************* TURNING RADIUS!!!!!!!!!!!
 float turnAngle = 360;
 
-double wheelDiameter = 9.9; // cm
+double wheelDiameter = 10.225; // cm
 double wheelSpacing = 20.4; // cm
 double straightLineRadians = straightLineDistance * 2 / (wheelDiameter); // 2*pi*dist/(pi*D)
 double wheelTurnProportion = turnRadius / (turnRadius + wheelSpacing);
@@ -74,7 +74,7 @@ int leftStraightLineSpeed = 250;
 int leftTurnSpeed = 250;
 int rightTurnSpeed = 250 * wheelTurnProportion;
 
-double Kp=1.5, Ki=5, Kd=6;
+double Kp=1.5, Ki=8, Kd=3;
 double encoderSpeedCap = 200;
 double leftWheelSpeedStraight = encoderSpeedCap, rightWheelSpeedStraight = encoderSpeedCap, leftWheelSpeedTurn = encoderSpeedCap, rightWheelSpeedTurn = encoderSpeedCap*wheelTurnProportion;
 PID leftWheelPIDStraight(&leftWheelPosition, &leftWheelSpeedStraight, &straightLineRadians, Kp, Ki, Kd, DIRECT);
@@ -204,10 +204,10 @@ void setup() {
   rightWheelPIDStraight.SetMode(AUTOMATIC);
   leftWheelPIDTurn.SetMode(AUTOMATIC);
   rightWheelPIDTurn.SetMode(AUTOMATIC);
-  leftWheelPIDStraight.SetSampleTime(50);
-  rightWheelPIDStraight.SetSampleTime(50);
-  leftWheelPIDTurn.SetSampleTime(50);
-  rightWheelPIDTurn.SetSampleTime(50);
+  leftWheelPIDTurn.SetSampleTime(200);
+  rightWheelPIDTurn.SetSampleTime(200);
+  leftWheelPIDStraight.SetSampleTime(200);
+  rightWheelPIDStraight.SetSampleTime(200);
   leftWheelPIDStraight.SetOutputLimits(65, encoderSpeedCap);
   rightWheelPIDStraight.SetOutputLimits(65, encoderSpeedCap);
   leftWheelPIDTurn.SetOutputLimits(30, encoderSpeedCap);
